@@ -24,9 +24,11 @@ func NewCommand() *cobra.Command {
 	command.PersistentFlags().StringVarP(&config.SSHUsername, "username", "", config.SSHUsername, "SSH username")
 	command.PersistentFlags().StringVarP(&config.SSHPassword, "password", "", config.SSHPassword, "SSH password")
 	command.PersistentFlags().BoolVarP(&config.Headless, "headless", "", config.Headless, "Run VM in headless mode")
+	//nolint:lll
 	command.PersistentFlags().BoolVarP(&config.AlwaysPull, "always-pull", "", config.AlwaysPull, "Always pull the latest version of the Tart image")
 	command.PersistentFlags().BoolVarP(&config.Softnet, "softnet", "", config.Softnet, "Enable softnet")
 	command.PersistentFlags().Uint64VarP(&config.CPU, "cpu", "", config.CPU, "Override default image CPU configuration")
+	//nolint:lll
 	command.PersistentFlags().Uint64VarP(&config.Memory, "memory", "", config.Memory, "Override default image memory (in Mb) configuration")
 
 	return command
