@@ -21,6 +21,11 @@ func NewCommand() *cobra.Command {
 		RunE:  runPrepareVM,
 	}
 
+	command.PersistentFlags().StringVarP(&config.SSHUsername, "username", "u", config.SSHUsername, "SSH username")
+	command.PersistentFlags().StringVarP(&config.SSHPassword, "password", "p", config.SSHPassword, "SSH password")
+	command.PersistentFlags().BoolVarP(&config.Headless, "headless", "h", config.Headless, "Run VM in headless mode")
+	command.PersistentFlags().BoolVarP(&config.AlwaysPull, "always-pull", "a", config.AlwaysPull, "Always pull the latest version of the Tart image")
+
 	return command
 }
 
@@ -51,6 +56,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	log.Println("Was able to SSH! VM is ready.")
 
 	return ssh.Close()
 }

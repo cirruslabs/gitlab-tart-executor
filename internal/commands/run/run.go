@@ -20,6 +20,9 @@ func NewCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 	}
 
+	command.PersistentFlags().StringVarP(&config.SSHUsername, "username", "u", config.SSHUsername, "SSH username")
+	command.PersistentFlags().StringVarP(&config.SSHPassword, "password", "p", config.SSHPassword, "SSH password")
+
 	return command
 }
 
