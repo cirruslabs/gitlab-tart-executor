@@ -1,4 +1,4 @@
-load("github.com/cirrus-modules/golang", "detect_tasks")
+load("github.com/cirrus-modules/golang", "lint_task")
 
 def main(ctx):
-    return detect_tasks()
+    return [lint_task()]
