@@ -3,7 +3,7 @@ Custom GitLab Runner Executor to run jobs inside ephemeral [Tart](https://tart.r
 # Configuration
 
 ```bash
-brew intall cirruslabs/cli/gitlab-runner-tart
+brew install cirruslabs/cli/gitlab-tart-executor
 ```
 
 ```toml
