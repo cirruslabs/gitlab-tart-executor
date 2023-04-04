@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/commands"
-	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 )
 
 func main() {
@@ -24,13 +24,17 @@ func main() {
 		}
 	}()
 
-	env, err := gitlab.InitEnv()
+	failureExitCodeRaw := os.Getenv("BUILD_FAILURE_EXIT_CODE")
+	if failureExitCodeRaw == "" {
+		failureExitCodeRaw = "1" // default
+	}
+	failureExitCode, err := strconv.Atoi(failureExitCodeRaw)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	if err := commands.NewRootCmd().ExecuteContext(ctx); err != nil {
 		log.Println(err)
-		os.Exit(env.FailureExitCode)
+		os.Exit(failureExitCode)
 	}
 }
