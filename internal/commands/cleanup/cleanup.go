@@ -19,17 +19,6 @@ func NewCommand() *cobra.Command {
 }
 
 func cleanupVM(cmd *cobra.Command, args []string) error {
-	internalConfig, err := tart.NewInternalConfigFromEnvironment()
-	if err != nil {
-		return err
-	}
-
-	if internalConfig.HostDirPath != "" {
-		if err := os.RemoveAll(internalConfig.HostDirPath); err != nil {
-			return err
-		}
-	}
-
 	gitLabEnv, err := gitlab.InitEnv()
 	if err != nil {
 		return err
@@ -37,9 +26,28 @@ func cleanupVM(cmd *cobra.Command, args []string) error {
 
 	vm := tart.ExistingVM(*gitLabEnv)
 
-	err = vm.Stop()
-	if err != nil {
+	if err = vm.Stop(); err != nil {
 		log.Printf("Failed to stop VM: %v", err)
 	}
-	return vm.Delete()
+
+	if err := vm.Delete(); err != nil {
+		log.Printf("Failed to delete VM: %v", err)
+
+		return err
+	}
+
+	internalConfig, err := tart.NewInternalConfigFromEnvironment()
+	if err != nil {
+		return err
+	}
+
+	if internalConfig.HostDirPath != "" {
+		if err := os.RemoveAll(internalConfig.HostDirPath); err != nil {
+			log.Printf("Failed to clean up temporary directory used for CIRRUS_GTE_HOST_DIR: %v", err)
+
+			return err
+		}
+	}
+
+	return nil
 }
