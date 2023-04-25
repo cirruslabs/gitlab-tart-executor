@@ -1,9 +1,10 @@
 module github.com/cirruslabs/gitlab-tart-executor
 
-go 1.20
+go 1.19
 
 require (
 	github.com/avast/retry-go v3.0.0+incompatible
+	github.com/caarlos0/env/v8 v8.0.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/spf13/cobra v1.6.1
 	golang.org/x/crypto v0.7.0

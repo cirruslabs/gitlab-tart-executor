@@ -33,7 +33,7 @@ func ExistingVM(gitLabEnv gitlab.Env) *VM {
 	}
 }
 
-func CreateNewVM(ctx context.Context, gitLabEnv gitlab.Env, config TartConfig) (*VM, error) {
+func CreateNewVM(ctx context.Context, gitLabEnv gitlab.Env, config Config) (*VM, error) {
 	vm := &VM{
 		id: gitLabEnv.VirtualMachineID(),
 	}
@@ -45,7 +45,7 @@ func CreateNewVM(ctx context.Context, gitLabEnv gitlab.Env, config TartConfig) (
 	return vm, nil
 }
 
-func (vm *VM) cloneAndConfigure(ctx context.Context, gitLabEnv gitlab.Env, config TartConfig) error {
+func (vm *VM) cloneAndConfigure(ctx context.Context, gitLabEnv gitlab.Env, config Config) error {
 	_, _, err := TartExec(ctx, "clone", gitLabEnv.JobImage, vm.id)
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (vm *VM) cloneAndConfigure(ctx context.Context, gitLabEnv gitlab.Env, confi
 	return nil
 }
 
-func (vm *VM) Start(config TartConfig) error {
+func (vm *VM) Start(config Config) error {
 	var runArgs = []string{tartCommandName, "run"}
 
 	if config.Softnet {
@@ -92,7 +92,7 @@ func (vm *VM) Start(config TartConfig) error {
 	return cmd.Process.Release()
 }
 
-func (vm *VM) OpenSSH(ctx context.Context, config TartConfig) (*ssh.Client, error) {
+func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
 	ip, err := vm.IP(ctx)
 	if err != nil {
 		return nil, err

@@ -7,11 +7,6 @@ import (
 	"os"
 )
 
-var config = tart.TartConfig{
-	SSHUsername: "admin",
-	SSHPassword: "admin",
-}
-
 func NewCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "run <path-to-script-file>",
@@ -19,9 +14,6 @@ func NewCommand() *cobra.Command {
 		RunE:  runScriptInsideVM,
 		Args:  cobra.MinimumNArgs(1),
 	}
-
-	command.PersistentFlags().StringVarP(&config.SSHUsername, "username", "u", config.SSHUsername, "SSH username")
-	command.PersistentFlags().StringVarP(&config.SSHPassword, "password", "p", config.SSHPassword, "SSH password")
 
 	return command
 }
@@ -38,6 +30,12 @@ func runScriptInsideVM(cmd *cobra.Command, args []string) error {
 	}
 
 	vm := tart.ExistingVM(*gitLabEnv)
+
+	config, err := tart.NewConfigFromEnvironment()
+	if err != nil {
+		return err
+	}
+
 	ssh, err := vm.OpenSSH(cmd.Context(), config)
 	if err != nil {
 		return err
