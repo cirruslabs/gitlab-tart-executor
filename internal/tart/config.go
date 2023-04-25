@@ -17,7 +17,7 @@ const (
 
 	// The prefix that we use to avoid confusion with Cirrus CI Cloud variables
 	// and remove repetition from the Config's struct declaration.
-	envPrefixGitlabTartExecutor = "CIRRUS_GTE_"
+	envPrefixGitlabTartExecutor = "TART_EXECUTOR_"
 )
 
 type Config struct {

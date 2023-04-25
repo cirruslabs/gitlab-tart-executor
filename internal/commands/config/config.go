@@ -42,7 +42,7 @@ func runConfig(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		gitlabRunnerConfig.JobEnv["CIRRUS_GTE_INTERNAL_HOST_DIR_PATH"] = tmpDir
+		gitlabRunnerConfig.JobEnv["TART_EXECUTOR_INTERNAL_HOST_DIR_PATH"] = tmpDir
 	}
 
 	jsonBytes, err := json.MarshalIndent(&gitlabRunnerConfig, "", "  ")

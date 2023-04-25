@@ -43,7 +43,7 @@ func cleanupVM(cmd *cobra.Command, args []string) error {
 
 	if internalConfig.HostDirPath != "" {
 		if err := os.RemoveAll(internalConfig.HostDirPath); err != nil {
-			log.Printf("Failed to clean up temporary directory used for CIRRUS_GTE_HOST_DIR: %v", err)
+			log.Printf("Failed to clean up temporary directory used for TART_EXECUTOR_HOST_DIR: %v", err)
 
 			return err
 		}

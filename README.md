@@ -49,14 +49,14 @@ that required paid sponsorship upon exceeding a free limit.
 
 | Name                      | Default | Description                                                                                                                          |
 |---------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------|
-| `CIRRUS_GTE_SSH_USERNAME` | admin   | SSH username to use when connecting to the VM                                                                                        |
-| `CIRRUS_GTE_SSH_PASSWORD` | admin   | SSH password to use when connecting to the VM                                                                                        |
-| `CIRRUS_GTE_HEADLESS`     | true    | Run the VM in headless mode (`true`) or with GUI (`false`)                                                                           |
-| `CIRRUS_GTE_ALWAYS_PULL`  | true    | Always pull the latest version of the Tart image (`true`) or only when the image doesn't exist locally (`false`)                     |
-| `CIRRUS_GTE_SOFTNET`      | false   | Whether to enable [Softnet](https://github.com/cirruslabs/softnet) software networking (`true`) or disable it (`false`)              |
-| `CIRRUS_GTE_CPU`          |         | Override default image CPU configuration, e.g. `8` (number of CPUs)                                                                  |
-| `CIRRUS_GTE_MEMORY`       |         | Override default image memory configuration, e.g. `8192` (size in megabytes)                                                         |
-| `CIRRUS_GTE_HOST_DIR`     | false   | Whether to mount a temporary directory from the host for performance reasons (`true`) or use a directory inside of a guest (`false`) |
+| `TART_EXECUTOR_SSH_USERNAME` | admin   | SSH username to use when connecting to the VM                                                                                        |
+| `TART_EXECUTOR_SSH_PASSWORD` | admin   | SSH password to use when connecting to the VM                                                                                        |
+| `TART_EXECUTOR_HEADLESS`     | true    | Run the VM in headless mode (`true`) or with GUI (`false`)                                                                           |
+| `TART_EXECUTOR_ALWAYS_PULL`  | true    | Always pull the latest version of the Tart image (`true`) or only when the image doesn't exist locally (`false`)                     |
+| `TART_EXECUTOR_SOFTNET`      | false   | Whether to enable [Softnet](https://github.com/cirruslabs/softnet) software networking (`true`) or disable it (`false`)              |
+| `TART_EXECUTOR_CPU`          |         | Override default image CPU configuration, e.g. `8` (number of CPUs)                                                                  |
+| `TART_EXECUTOR_MEMORY`       |         | Override default image memory configuration, e.g. `8192` (size in megabytes)                                                         |
+| `TART_EXECUTOR_HOST_DIR`     | false   | Whether to mount a temporary directory from the host for performance reasons (`true`) or use a directory inside of a guest (`false`) |
 
 # Local Development
 
