@@ -62,8 +62,13 @@ that required paid sponsorship upon exceeding a free limit.
 In order to test a local change with your GitLab Runner, you first need to build the binary:
 
 ```bash
-go build -o executor-dev cmd/gitlab-tart-executor/main.go
+go build -o gitlab-tart-executor cmd/gitlab-tart-executor/main.go
 ```
 
-Now you can use an absolute path to `executor-dev` binary in your `.gitlab-runner/config.toml` configuration
-in `prepare_exec`, `run_exec` and `cleanup_exec` fields.
+Now you can run your GitLab Runner as follows:
+
+```
+PATH=$PATH:<path to a directory with gitlab-tart-executor binary> gitlab-runner run
+```
+
+If that's not possible, use an absolute path to `gitlab-tart-executor` binary in your `.gitlab-runner/config.toml` for `prepare_exec`, `run_exec` and `cleanup_exec` fields.
