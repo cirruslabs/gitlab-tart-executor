@@ -72,4 +72,4 @@ Now you can run your GitLab Runner as follows:
 PATH=$PATH:$PWD gitlab-runner run
 ```
 
-If that's not possible, use an absolute path to `gitlab-tart-executor` binary in your `.gitlab-runner/config.toml` for `prepare_exec`, `run_exec` and `cleanup_exec` fields.
+If that's not possible, use an absolute path to `gitlab-tart-executor` binary in your `.gitlab-runner/config.toml` for `config_exec `, `prepare_exec`, `run_exec` and `cleanup_exec` fields.
