@@ -28,6 +28,11 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	internalConfig, err := tart.NewInternalConfigFromEnvironment()
+	if err != nil {
+		return err
+	}
+
 	if config.AlwaysPull {
 		log.Printf("Pulling the latest version of %s...\n", gitLabEnv.JobImage)
 		_, _, err := tart.TartExec(cmd.Context(), "pull", gitLabEnv.JobImage)
@@ -41,7 +46,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	err = vm.Start(config)
+	err = vm.Start(config, internalConfig)
 	if err != nil {
 		return err
 	}

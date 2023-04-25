@@ -5,6 +5,7 @@ import (
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
 	"github.com/spf13/cobra"
 	"log"
+	"os"
 )
 
 func NewCommand() *cobra.Command {
@@ -18,6 +19,17 @@ func NewCommand() *cobra.Command {
 }
 
 func cleanupVM(cmd *cobra.Command, args []string) error {
+	internalConfig, err := tart.NewInternalConfigFromEnvironment()
+	if err != nil {
+		return err
+	}
+
+	if internalConfig.HostDirPath != "" {
+		if err := os.RemoveAll(internalConfig.HostDirPath); err != nil {
+			return err
+		}
+	}
+
 	gitLabEnv, err := gitlab.InitEnv()
 	if err != nil {
 		return err

@@ -13,11 +13,11 @@ const (
 	// conflicts with system environment variables.
 	//
 	// [1]: https://docs.gitlab.com/runner/executors/custom.html#stages
-	gitlabRunnerPrefix = "CUSTOM_ENV_"
+	envPrefixGitLabRunner = "CUSTOM_ENV_"
 
 	// The prefix that we use to avoid confusion with Cirrus CI Cloud variables
 	// and remove repetition from the Config's struct declaration.
-	cirrusGitlabTartExecutorPrefix = "CIRRUS_GTE_"
+	envPrefixGitlabTartExecutor = "CIRRUS_GTE_"
 )
 
 type Config struct {
@@ -28,13 +28,14 @@ type Config struct {
 	Softnet     bool   `env:"SOFTNET"`
 	Headless    bool   `env:"HEADLESS"  envDefault:"true"`
 	AlwaysPull  bool   `env:"ALWAYS_PULL"  envDefault:"true"`
+	HostDir     bool   `env:"HOST_DIR"`
 }
 
 func NewConfigFromEnvironment() (Config, error) {
 	var config Config
 
 	if err := env.ParseWithOptions(&config, env.Options{
-		Prefix: gitlabRunnerPrefix + cirrusGitlabTartExecutorPrefix,
+		Prefix: envPrefixGitLabRunner + envPrefixGitlabTartExecutor,
 	}); err != nil {
 		return config, fmt.Errorf("%w: %v", ErrConfigFromEnvironmentFailed, err)
 	}
