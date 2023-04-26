@@ -67,7 +67,7 @@ func (vm *VM) cloneAndConfigure(ctx context.Context, gitLabEnv gitlab.Env, confi
 	return nil
 }
 
-func (vm *VM) Start(config Config, internalConfig InternalConfig) error {
+func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env) error {
 	var runArgs = []string{tartCommandName, "run"}
 
 	if config.Softnet {
@@ -78,8 +78,8 @@ func (vm *VM) Start(config Config, internalConfig InternalConfig) error {
 		runArgs = append(runArgs, "--no-graphics")
 	}
 
-	if internalConfig.HostDirPath != "" {
-		runArgs = append(runArgs, "--dir", fmt.Sprintf("hostdir:%s", internalConfig.HostDirPath))
+	if config.HostDir {
+		runArgs = append(runArgs, "--dir", fmt.Sprintf("hostdir:%s", gitLabEnv.HostDirPath()))
 	}
 
 	runArgs = append(runArgs, vm.id)

@@ -36,14 +36,15 @@ func cleanupVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	internalConfig, err := tart.NewInternalConfigFromEnvironment()
+	tartConfig, err := tart.NewConfigFromEnvironment()
 	if err != nil {
 		return err
 	}
 
-	if internalConfig.HostDirPath != "" {
-		if err := os.RemoveAll(internalConfig.HostDirPath); err != nil {
-			log.Printf("Failed to clean up temporary directory used for TART_EXECUTOR_HOST_DIR: %v", err)
+	if tartConfig.HostDir {
+		if err := os.RemoveAll(gitLabEnv.HostDirPath()); err != nil {
+			log.Printf("Failed to clean up %q (temporary directory from the host): %v",
+				gitLabEnv.HostDirPath(), err)
 
 			return err
 		}

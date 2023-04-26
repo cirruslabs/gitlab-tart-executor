@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
 	"github.com/spf13/cobra"
 	"os"
@@ -34,15 +35,17 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	gitLabEnv, err := gitlab.InitEnv()
+	if err != nil {
+		return err
+	}
+
 	if tartConfig.HostDir {
 		gitlabRunnerConfig.BuildsDir = "/Volumes/My Shared Files/hostdir"
 
-		tmpDir, err := os.MkdirTemp("", "")
-		if err != nil {
+		if err := os.MkdirAll(gitLabEnv.HostDirPath(), 0700); err != nil {
 			return err
 		}
-
-		gitlabRunnerConfig.JobEnv["TART_EXECUTOR_INTERNAL_HOST_DIR_PATH"] = tmpDir
 	}
 
 	jsonBytes, err := json.MarshalIndent(&gitlabRunnerConfig, "", "  ")
