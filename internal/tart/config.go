@@ -23,8 +23,6 @@ const (
 type Config struct {
 	SSHUsername string `env:"SSH_USERNAME" envDefault:"admin"`
 	SSHPassword string `env:"SSH_PASSWORD" envDefault:"admin"`
-	CPU         uint64 `env:"CPU"`
-	Memory      uint64 `env:"MEMORY"`
 	Softnet     bool   `env:"SOFTNET"`
 	Headless    bool   `env:"HEADLESS"  envDefault:"true"`
 	AlwaysPull  bool   `env:"ALWAYS_PULL"  envDefault:"true"`

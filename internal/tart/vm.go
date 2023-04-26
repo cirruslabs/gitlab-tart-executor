@@ -33,37 +33,48 @@ func ExistingVM(gitLabEnv gitlab.Env) *VM {
 	}
 }
 
-func CreateNewVM(ctx context.Context, gitLabEnv gitlab.Env, config Config) (*VM, error) {
+func CreateNewVM(
+	ctx context.Context,
+	gitLabEnv gitlab.Env,
+	cpuOverride uint64,
+	memoryOverride uint64,
+) (*VM, error) {
 	vm := &VM{
 		id: gitLabEnv.VirtualMachineID(),
 	}
 
-	if err := vm.cloneAndConfigure(ctx, gitLabEnv, config); err != nil {
+	if err := vm.cloneAndConfigure(ctx, gitLabEnv, cpuOverride, memoryOverride); err != nil {
 		return nil, fmt.Errorf("failed to clone the VM: %w", err)
 	}
 
 	return vm, nil
 }
 
-func (vm *VM) cloneAndConfigure(ctx context.Context, gitLabEnv gitlab.Env, config Config) error {
+func (vm *VM) cloneAndConfigure(
+	ctx context.Context,
+	gitLabEnv gitlab.Env,
+	cpuOverride uint64,
+	memoryOverride uint64,
+) error {
 	_, _, err := TartExec(ctx, "clone", gitLabEnv.JobImage, vm.id)
 	if err != nil {
 		return err
 	}
 
-	if config.Memory != 0 {
-		_, _, err = TartExec(ctx, "set", "--memory", strconv.FormatUint(config.Memory, 10), vm.id)
+	if cpuOverride != 0 {
+		_, _, err = TartExec(ctx, "set", "--cpu", strconv.FormatUint(cpuOverride, 10), vm.id)
 		if err != nil {
 			return err
 		}
 	}
 
-	if config.CPU != 0 {
-		_, _, err = TartExec(ctx, "set", "--cpu", strconv.FormatUint(config.CPU, 10), vm.id)
+	if memoryOverride != 0 {
+		_, _, err = TartExec(ctx, "set", "--memory", strconv.FormatUint(memoryOverride, 10), vm.id)
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
