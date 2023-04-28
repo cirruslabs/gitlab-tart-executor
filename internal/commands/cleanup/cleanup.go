@@ -5,6 +5,7 @@ import (
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
 	"github.com/spf13/cobra"
 	"log"
+	"os"
 )
 
 func NewCommand() *cobra.Command {
@@ -25,9 +26,29 @@ func cleanupVM(cmd *cobra.Command, args []string) error {
 
 	vm := tart.ExistingVM(*gitLabEnv)
 
-	err = vm.Stop()
-	if err != nil {
+	if err = vm.Stop(); err != nil {
 		log.Printf("Failed to stop VM: %v", err)
 	}
-	return vm.Delete()
+
+	if err := vm.Delete(); err != nil {
+		log.Printf("Failed to delete VM: %v", err)
+
+		return err
+	}
+
+	tartConfig, err := tart.NewConfigFromEnvironment()
+	if err != nil {
+		return err
+	}
+
+	if tartConfig.HostDir {
+		if err := os.RemoveAll(gitLabEnv.HostDirPath()); err != nil {
+			log.Printf("Failed to clean up %q (temporary directory from the host): %v",
+				gitLabEnv.HostDirPath(), err)
+
+			return err
+		}
+	}
+
+	return nil
 }

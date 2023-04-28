@@ -7,12 +7,8 @@ import (
 	"log"
 )
 
-var config = tart.TartConfig{
-	SSHUsername: "admin",
-	SSHPassword: "admin",
-	Headless:    true,
-	AlwaysPull:  true,
-}
+var cpuOverride uint64
+var memoryOverride uint64
 
 func NewCommand() *cobra.Command {
 	command := &cobra.Command{
@@ -21,15 +17,10 @@ func NewCommand() *cobra.Command {
 		RunE:  runPrepareVM,
 	}
 
-	command.PersistentFlags().StringVarP(&config.SSHUsername, "username", "", config.SSHUsername, "SSH username")
-	command.PersistentFlags().StringVarP(&config.SSHPassword, "password", "", config.SSHPassword, "SSH password")
-	command.PersistentFlags().BoolVarP(&config.Headless, "headless", "", config.Headless, "Run VM in headless mode")
-	//nolint:lll
-	command.PersistentFlags().BoolVarP(&config.AlwaysPull, "always-pull", "", config.AlwaysPull, "Always pull the latest version of the Tart image")
-	command.PersistentFlags().BoolVarP(&config.Softnet, "softnet", "", config.Softnet, "Enable softnet")
-	command.PersistentFlags().Uint64VarP(&config.CPU, "cpu", "", config.CPU, "Override default image CPU configuration")
-	//nolint:lll
-	command.PersistentFlags().Uint64VarP(&config.Memory, "memory", "", config.Memory, "Override default image memory (in Mb) configuration")
+	command.PersistentFlags().Uint64Var(&cpuOverride, "cpu", 0,
+		"Override default image CPU configuration (number of CPUs)")
+	command.PersistentFlags().Uint64Var(&memoryOverride, "memory", 0,
+		"Override default image memory configuration (size in megabytes)")
 
 	return command
 }
@@ -39,6 +30,12 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	config, err := tart.NewConfigFromEnvironment()
+	if err != nil {
+		return err
+	}
+
 	if config.AlwaysPull {
 		log.Printf("Pulling the latest version of %s...\n", gitLabEnv.JobImage)
 		_, _, err := tart.TartExec(cmd.Context(), "pull", gitLabEnv.JobImage)
@@ -48,11 +45,11 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	}
 
 	log.Println("Cloning and configuring a new VM...")
-	vm, err := tart.CreateNewVM(cmd.Context(), *gitLabEnv, config)
+	vm, err := tart.CreateNewVM(cmd.Context(), *gitLabEnv, cpuOverride, memoryOverride)
 	if err != nil {
 		return err
 	}
-	err = vm.Start(config)
+	err = vm.Start(config, gitLabEnv)
 	if err != nil {
 		return err
 	}

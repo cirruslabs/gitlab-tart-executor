@@ -2,6 +2,7 @@ package commands
 
 import (
 	"github.com/cirruslabs/gitlab-tart-executor/internal/commands/cleanup"
+	"github.com/cirruslabs/gitlab-tart-executor/internal/commands/config"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/commands/prepare"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/commands/run"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/version"
@@ -17,6 +18,7 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	command.AddCommand(
+		config.NewCommand(),
 		prepare.NewCommand(),
 		run.NewCommand(),
 		cleanup.NewCommand(),

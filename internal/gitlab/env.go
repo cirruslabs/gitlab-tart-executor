@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -17,6 +18,10 @@ type Env struct {
 
 func (e Env) VirtualMachineID() string {
 	return fmt.Sprintf("gitlab-%s", e.JobID)
+}
+
+func (e Env) HostDirPath() string {
+	return filepath.Join(os.TempDir(), fmt.Sprintf("tart-executor-host-dir-%s", e.JobID))
 }
 
 func InitEnv() (*Env, error) {
