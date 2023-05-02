@@ -1,15 +1,21 @@
 package prepare
 
 import (
+	"context"
+	"github.com/alecthomas/units"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
+	"strconv"
 )
 
-var cpuOverride uint64
-var memoryOverride uint64
+var concurrency uint64
+var cpuOverrideRaw string
+var memoryOverrideRaw string
 
 func NewCommand() *cobra.Command {
 	command := &cobra.Command{
@@ -18,15 +24,27 @@ func NewCommand() *cobra.Command {
 		RunE:  runPrepareVM,
 	}
 
-	command.PersistentFlags().Uint64Var(&cpuOverride, "cpu", 0,
-		"Override default image CPU configuration (number of CPUs)")
-	command.PersistentFlags().Uint64Var(&memoryOverride, "memory", 0,
-		"Override default image memory configuration (size in megabytes)")
+	command.PersistentFlags().Uint64Var(&concurrency, "concurrency", 1,
+		"Maximum number of concurrently running Tart VMs to calculate the \"auto\" resources")
+	command.PersistentFlags().StringVar(&cpuOverrideRaw, "cpu", "",
+		"Override default image CPU configuration (number of CPUs or \"auto\")")
+	command.PersistentFlags().StringVar(&memoryOverrideRaw, "memory", "",
+		"Override default image memory configuration (size in megabytes or \"auto\")")
 
 	return command
 }
 
 func runPrepareVM(cmd *cobra.Command, args []string) error {
+	cpuOverride, err := parseCPUOverride(cmd.Context(), cpuOverrideRaw)
+	if err != nil {
+		return err
+	}
+
+	memoryOverride, err := parseMemoryOverride(cmd.Context(), memoryOverrideRaw)
+	if err != nil {
+		return err
+	}
+
 	gitLabEnv, err := gitlab.InitEnv()
 	if err != nil {
 		return err
@@ -85,4 +103,44 @@ func additionalPullEnv(registry *gitlab.Registry) map[string]string {
 	}
 
 	return nil
+}
+
+func parseCPUOverride(ctx context.Context, override string) (uint64, error) {
+	// No override
+	if override == "" {
+		return 0, nil
+	}
+
+	// "Auto" override
+	if override == "auto" {
+		count, err := cpu.CountsWithContext(ctx, true)
+		if err != nil {
+			return 0, err
+		}
+
+		return uint64(count) / concurrency, nil
+	}
+
+	// Exact override
+	return strconv.ParseUint(override, 10, 64)
+}
+
+func parseMemoryOverride(ctx context.Context, override string) (uint64, error) {
+	// No override
+	if override == "" {
+		return 0, nil
+	}
+
+	// "Auto" override
+	if override == "auto" {
+		virtualMemoryStat, err := mem.VirtualMemoryWithContext(ctx)
+		if err != nil {
+			return 0, err
+		}
+
+		return virtualMemoryStat.Total / uint64(units.MiB) / concurrency, nil
+	}
+
+	// Exact override
+	return strconv.ParseUint(override, 10, 64)
 }
