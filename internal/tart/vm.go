@@ -171,7 +171,23 @@ func TartExec(
 	ctx context.Context,
 	args ...string,
 ) (string, string, error) {
+	return TartExecWithEnv(ctx, nil, args...)
+}
+
+func TartExecWithEnv(
+	ctx context.Context,
+	env map[string]string,
+	args ...string,
+) (string, string, error) {
 	cmd := exec.CommandContext(ctx, tartCommandName, args...)
+
+	// Base environment
+	cmd.Env = cmd.Environ()
+
+	// Environment overrides
+	for key, value := range env {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
+	}
 
 	var stdout, stderr bytes.Buffer
 
