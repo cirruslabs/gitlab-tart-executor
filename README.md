@@ -72,6 +72,41 @@ test:
     TART_EXECUTOR_HOST_DIR: true
 ```
 
+### Fully utilizing resources of the host
+
+You can tell the Tart Executor to override the default CPU and memory settings of the VM image by passing the `--cpu` and `--memory` command-line arguments to `prepare` sub-command.
+
+To avoid manually retrieving and calculating the total number CPUs and the memory on the host, pass the `auto` as an argument to `--cpu` and `--memory` instead of the numerical values, e.g. `--cpu auto` or `--memory auto`.
+
+This will force the `prepare` stage to retrieve the total host resources internally and calculate them according to formula:
+
+```
+<total amount of the resource (CPUs or memory) on the host> / <concurrency>
+```
+
+...where `<concurrency>` is controlled by the [`--concurrency` command-line argument](#prepare-stage).
+
+Here's an example on how to configure the GitLab Runner to run two Tart VMs concurrently, utilizing half of the host's resources for each VM:
+
+```toml
+concurrent = 2
+
+[[runners]]
+  # ...
+  executor = "custom"
+  [runners.feature_flags]
+    FF_RESOLVE_FULL_TLS_CHAIN = false
+  [runners.custom]
+    config_exec = "gitlab-tart-executor"
+    config_args = ["config"]
+    prepare_exec = "gitlab-tart-executor"
+    prepare_args = ["prepare", "--concurrency 2", "--cpu auto", "--memory auto"]
+    run_exec = "gitlab-tart-executor"
+    run_args = ["run"]
+    cleanup_exec = "gitlab-tart-executor"
+    cleanup_args = ["cleanup"]
+```
+
 ### Using different SSH credentials
 
 Tart Executor uses the default `admin:admin` credentials when connecting to the VM over SSH.
@@ -108,10 +143,13 @@ that required paid sponsorship upon exceeding a free limit.
 
 ### `prepare` stage
 
-| Argument  | Default           | Description                                                     |
-|-----------|-------------------|-----------------------------------------------------------------|
-| `--cpu`   | `0` (no override) | Override default image CPU configuration (number of CPUs)       |
-| `--memory` | `0` (no override) | Override default image memory configuration (size in megabytes) |
+| Argument        | Default     | Description                                                                       |
+|-----------------|-------------|-----------------------------------------------------------------------------------|
+| `--concurrency` | 1           | Maximum number of concurrently running Tart VMs to calculate the `auto` resources |
+| `--cpu`         | no override | Override default image CPU configuration (number of CPUs or `auto`<sup>1</sup>)            |
+| `--memory`      | no override | Override default image memory configuration (size in megabytes or `auto`<sup>1</sup>)      |
+
+<sup>1</sup>: automatically distributes all host resources according to the concurrency level (for example, VM gets all of the host CPU and RAM assigned when `--concurrency` is 1, and half of that when `--concurrency` is 2)
 
 ## Supported environment variables
 
