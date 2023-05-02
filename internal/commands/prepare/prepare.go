@@ -5,6 +5,7 @@ import (
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
 	"github.com/spf13/cobra"
 	"log"
+	"os"
 )
 
 var cpuOverride uint64
@@ -38,7 +39,8 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 	if config.AlwaysPull {
 		log.Printf("Pulling the latest version of %s...\n", gitLabEnv.JobImage)
-		_, _, err := tart.TartExec(cmd.Context(), "pull", gitLabEnv.JobImage)
+		_, _, err := tart.TartExecWithEnv(cmd.Context(), additionalPullEnv(gitLabEnv.Registry),
+			"pull", gitLabEnv.JobImage)
 		if err != nil {
 			return err
 		}
@@ -61,4 +63,26 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	log.Println("Was able to SSH! VM is ready.")
 
 	return ssh.Close()
+}
+
+func additionalPullEnv(registry *gitlab.Registry) map[string]string {
+	// Prefer manual registry credentials override from the user
+	tartRegistryUsername, tartRegistryUsernameOK := os.LookupEnv("CUSTOM_ENV_TART_REGISTRY_USERNAME")
+	tartRegistryPassword, tartRegistryPasswordOK := os.LookupEnv("CUSTOM_ENV_TART_REGISTRY_PASSWORD")
+	if tartRegistryUsernameOK && tartRegistryPasswordOK {
+		return map[string]string{
+			"TART_REGISTRY_USERNAME": tartRegistryUsername,
+			"TART_REGISTRY_PASSWORD": tartRegistryPassword,
+		}
+	}
+
+	// Otherwise fallback to GitLab's provided registry credentials, if any
+	if registry != nil {
+		return map[string]string{
+			"TART_REGISTRY_USERNAME": registry.User,
+			"TART_REGISTRY_PASSWORD": registry.Password,
+		}
+	}
+
+	return nil
 }
