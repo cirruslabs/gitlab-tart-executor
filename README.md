@@ -72,6 +72,41 @@ test:
     TART_EXECUTOR_HOST_DIR: true
 ```
 
+### Fully utilizing resources of the host
+
+You can tell the Tart Executor to override the default CPU and memory settings of the VM image by passing the `--cpu` and `--memory` command-line arguments to `prepare` sub-command.
+
+To avoid manually retrieving and calculating the total number CPUs and the memory on the host, pass the `auto` as an argument to `--cpu` and `--memory` instead of the numerical values, e.g. `--cpu auto` or `--memory auto`.
+
+This will force the `prepare` stage to retrieve the total host resources internally and calculate them according to formula:
+
+```
+<total amount of the resource (CPUs or memory) on the host> / <concurrency>
+```
+
+...where `<concurrency>` is controlled by the [`--concurrency` command-line argument](#prepare-stage).
+
+Here's an example on how to configure the GitLab Runner to run two Tart VMs concurrently, utilizing half of the host's resources for each VM:
+
+```toml
+concurrent = 2
+
+[[runners]]
+  # ...
+  executor = "custom"
+  [runners.feature_flags]
+    FF_RESOLVE_FULL_TLS_CHAIN = false
+  [runners.custom]
+    config_exec = "gitlab-tart-executor"
+    config_args = ["config"]
+    prepare_exec = "gitlab-tart-executor"
+    prepare_args = ["prepare", "--concurrency 2", "--cpu auto", "--memory auto"]
+    run_exec = "gitlab-tart-executor"
+    run_args = ["run"]
+    cleanup_exec = "gitlab-tart-executor"
+    cleanup_args = ["cleanup"]
+```
+
 ### Using different SSH credentials
 
 Tart Executor uses the default `admin:admin` credentials when connecting to the VM over SSH.
