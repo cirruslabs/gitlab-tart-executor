@@ -27,6 +27,7 @@ type Config struct {
 	Headless    bool   `env:"HEADLESS"  envDefault:"true"`
 	AlwaysPull  bool   `env:"ALWAYS_PULL"  envDefault:"true"`
 	HostDir     bool   `env:"HOST_DIR"`
+	Shell       string `env:"SHELL"`
 }
 
 func NewConfigFromEnvironment() (Config, error) {
