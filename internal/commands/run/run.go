@@ -53,7 +53,11 @@ func runScriptInsideVM(cmd *cobra.Command, args []string) error {
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 
-	err = session.Shell()
+	if config.Shell != "" {
+		err = session.Start(config.Shell)
+	} else {
+		err = session.Shell()
+	}
 	if err != nil {
 		return err
 	}

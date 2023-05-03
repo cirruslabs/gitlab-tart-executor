@@ -153,14 +153,15 @@ that required paid sponsorship upon exceeding a free limit.
 
 ## Supported environment variables
 
-| Name                                 | Default | Description                                                                                                                          |
-|--------------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------|
-| `TART_EXECUTOR_SSH_USERNAME`         | admin   | SSH username to use when connecting to the VM                                                                                        |
-| `TART_EXECUTOR_SSH_PASSWORD`         | admin   | SSH password to use when connecting to the VM                                                                                        |
-| `TART_EXECUTOR_HEADLESS`             | true    | Run the VM in headless mode (`true`) or with GUI (`false`)                                                                           |
-| `TART_EXECUTOR_ALWAYS_PULL`          | true    | Always pull the latest version of the Tart image (`true`) or only when the image doesn't exist locally (`false`)                     |
-| `TART_EXECUTOR_SOFTNET`              | false   | Whether to enable [Softnet](https://github.com/cirruslabs/softnet) software networking (`true`) or disable it (`false`)              |
-| `TART_EXECUTOR_HOST_DIR`<sup>1</sup> | false   | Whether to mount a temporary directory from the host for performance reasons (`true`) or use a directory inside of a guest (`false`) |
+| Name                                 | Default        | Description                                                                                                                          |
+|--------------------------------------|----------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `TART_EXECUTOR_SSH_USERNAME`         | admin          | SSH username to use when connecting to the VM                                                                                        |
+| `TART_EXECUTOR_SSH_PASSWORD`         | admin          | SSH password to use when connecting to the VM                                                                                        |
+| `TART_EXECUTOR_HEADLESS`             | true           | Run the VM in headless mode (`true`) or with GUI (`false`)                                                                           |
+| `TART_EXECUTOR_ALWAYS_PULL`          | true           | Always pull the latest version of the Tart image (`true`) or only when the image doesn't exist locally (`false`)                     |
+| `TART_EXECUTOR_SOFTNET`              | false          | Whether to enable [Softnet](https://github.com/cirruslabs/softnet) software networking (`true`) or disable it (`false`)              |
+| `TART_EXECUTOR_HOST_DIR`<sup>1</sup> | false          | Whether to mount a temporary directory from the host for performance reasons (`true`) or use a directory inside of a guest (`false`) |
+| `TART_EXECUTOR_SHELL`                | system default | Alternative [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) to use (e.g. `zsh` or `bash`)                                     |
 
 <sup>1</sup>: to use the directory mounting feature, both the host and the guest need to run macOS 13.0 (Ventura) or newer.
 
