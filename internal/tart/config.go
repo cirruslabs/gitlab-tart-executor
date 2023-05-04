@@ -21,13 +21,14 @@ const (
 )
 
 type Config struct {
-	SSHUsername string `env:"SSH_USERNAME" envDefault:"admin"`
-	SSHPassword string `env:"SSH_PASSWORD" envDefault:"admin"`
-	Softnet     bool   `env:"SOFTNET"`
-	Headless    bool   `env:"HEADLESS"  envDefault:"true"`
-	AlwaysPull  bool   `env:"ALWAYS_PULL"  envDefault:"true"`
-	HostDir     bool   `env:"HOST_DIR"`
-	Shell       string `env:"SHELL"`
+	SSHUsername         string `env:"SSH_USERNAME" envDefault:"admin"`
+	SSHPassword         string `env:"SSH_PASSWORD" envDefault:"admin"`
+	Softnet             bool   `env:"SOFTNET"`
+	Headless            bool   `env:"HEADLESS"  envDefault:"true"`
+	AlwaysPull          bool   `env:"ALWAYS_PULL"  envDefault:"true"`
+	HostDir             bool   `env:"HOST_DIR"`
+	Shell               string `env:"SHELL"`
+	InstallGitlabRunner bool   `env:"INSTALL_GITLAB_RUNNER"`
 }
 
 func NewConfigFromEnvironment() (Config, error) {
