@@ -1,7 +1,9 @@
 package prepare
 
 import (
+	"bytes"
 	"context"
+	_ "embed"
 	"github.com/alecthomas/units"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
@@ -12,6 +14,9 @@ import (
 	"os"
 	"strconv"
 )
+
+//go:embed install-gitlab-runner.sh
+var installGitlabRunnerScript string
 
 var concurrency uint64
 var cpuOverrideRaw string
@@ -78,7 +83,30 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Println("Was able to SSH! VM is ready.")
+
+	if config.InstallGitlabRunner {
+		log.Println("Was able to SSH! Installing GitLab Runner...")
+
+		session, err := ssh.NewSession()
+		if err != nil {
+			return err
+		}
+		defer session.Close()
+
+		session.Stdin = bytes.NewBufferString(installGitlabRunnerScript)
+		session.Stdout = os.Stdout
+		session.Stderr = os.Stderr
+
+		if err := session.Shell(); err != nil {
+			return err
+		}
+
+		if err := session.Wait(); err != nil {
+			return err
+		}
+	} else {
+		log.Println("Was able to SSH! VM is ready.")
+	}
 
 	return ssh.Close()
 }
