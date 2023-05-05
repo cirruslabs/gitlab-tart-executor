@@ -9,6 +9,7 @@ import (
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"golang.org/x/crypto/ssh"
 	"net"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -91,6 +92,10 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env) error {
 
 	if config.HostDir {
 		runArgs = append(runArgs, "--dir", fmt.Sprintf("hostdir:%s", gitLabEnv.HostDirPath()))
+	}
+
+	if cacheDir, ok := os.LookupEnv(EnvTartExecutorInternalCacheDir); ok {
+		runArgs = append(runArgs, "--dir", fmt.Sprintf("cachedir:%s", cacheDir))
 	}
 
 	runArgs = append(runArgs, vm.id)

@@ -17,7 +17,12 @@ const (
 
 	// The prefix that we use to avoid confusion with Cirrus CI Cloud variables
 	// and remove repetition from the Config's struct declaration.
-	envPrefixGitlabTartExecutor = "TART_EXECUTOR_"
+	envPrefixTartExecutor = "TART_EXECUTOR_"
+
+	// EnvTartExecutorInternalCacheDir is an internal environment variable
+	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
+	// by the user.
+	EnvTartExecutorInternalCacheDir = "TART_EXECUTOR_INTERNAL_CACHE_DIR"
 )
 
 type Config struct {
@@ -35,7 +40,7 @@ func NewConfigFromEnvironment() (Config, error) {
 	var config Config
 
 	if err := env.ParseWithOptions(&config, env.Options{
-		Prefix: envPrefixGitLabRunner + envPrefixGitlabTartExecutor,
+		Prefix: envPrefixGitLabRunner + envPrefixTartExecutor,
 	}); err != nil {
 		return config, fmt.Errorf("%w: %v", ErrConfigFromEnvironmentFailed, err)
 	}
