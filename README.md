@@ -163,6 +163,7 @@ that required paid sponsorship upon exceeding a free limit.
 | `TART_EXECUTOR_HOST_DIR`<sup>1</sup>  | false          | Whether to mount a temporary directory from the host for performance reasons (`true`) or use a directory inside of a guest (`false`)                                                                                                                                       |
 | `TART_EXECUTOR_SHELL`                 | system default | Alternative [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) to use (e.g. `zsh` or `bash`)                                                                                                                                                                           |
 | `TART_EXECUTOR_INSTALL_GITLAB_RUNNER` | false          | Automatically install GitLab Runner [via Homebrew](https://docs.gitlab.com/runner/install/osx.html#homebrew-installation-alternative) or [manually using cURL](https://docs.gitlab.com/runner/install/osx.html#manual-installation-official), if Homebrew is not available |
+| `TART_EXECUTOR_TIMEZONE`              |                | Timezone to set in the guest (or `auto` to pick up the timezone from host), see `systemsetup listtimezones` for a list of possible timezones                                                                                                                               |
 
 <sup>1</sup>: to use the directory mounting feature, both the host and the guest need to run macOS 13.0 (Ventura) or newer.
 
