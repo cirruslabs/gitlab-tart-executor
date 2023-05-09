@@ -34,6 +34,7 @@ type Config struct {
 	HostDir             bool   `env:"HOST_DIR"`
 	Shell               string `env:"SHELL"`
 	InstallGitlabRunner bool   `env:"INSTALL_GITLAB_RUNNER"`
+	Timezone            string `env:"TIMEZONE"`
 }
 
 func NewConfigFromEnvironment() (Config, error) {

@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	_ "embed"
+	"fmt"
 	"github.com/alecthomas/units"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
+	"github.com/cirruslabs/gitlab-tart-executor/internal/timezone"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/spf13/cobra"
@@ -84,8 +86,10 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	log.Println("Was able to SSH!")
+
 	if config.InstallGitlabRunner {
-		log.Println("Was able to SSH! Installing GitLab Runner...")
+		log.Println("Installing GitLab Runner...")
 
 		session, err := ssh.NewSession()
 		if err != nil {
@@ -104,9 +108,30 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		if err := session.Wait(); err != nil {
 			return err
 		}
-	} else {
-		log.Println("Was able to SSH! VM is ready.")
 	}
+
+	if config.Timezone != "" {
+		log.Println("Setting timezone...")
+
+		tz, err := timezone.Parse(config.Timezone)
+		if err != nil {
+			return err
+		}
+
+		session, err := ssh.NewSession()
+		if err != nil {
+			return err
+		}
+		defer session.Close()
+
+		if err := session.Run(fmt.Sprintf("sudo systemsetup settimezone %s", tz)); err != nil {
+			return err
+		}
+
+		log.Printf("Timezone was set to %s!\n", tz)
+	}
+
+	log.Println("VM is ready.")
 
 	return ssh.Close()
 }
