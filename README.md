@@ -141,6 +141,12 @@ that required paid sponsorship upon exceeding a free limit.
 
 ## Supported command-line arguments
 
+### `config` stage
+
+| Argument      | Default | Description                                             |
+|---------------|---------|---------------------------------------------------------|
+| `--cache-dir` |         | Path to a directory on host to use for caching purposes |
+
 ### `prepare` stage
 
 | Argument        | Default     | Description                                                                       |
