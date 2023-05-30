@@ -100,7 +100,7 @@ concurrent = 2
     config_exec = "gitlab-tart-executor"
     config_args = ["config"]
     prepare_exec = "gitlab-tart-executor"
-    prepare_args = ["prepare", "--concurrency 2", "--cpu auto", "--memory auto"]
+    prepare_args = ["prepare", "--concurrency", "2", "--cpu", "auto", "--memory", "auto"]
     run_exec = "gitlab-tart-executor"
     run_args = ["run"]
     cleanup_exec = "gitlab-tart-executor"
@@ -140,6 +140,12 @@ Tart itself on the other hand is [source available under Fair Software License](
 that required paid sponsorship upon exceeding a free limit.
 
 ## Supported command-line arguments
+
+### `config` stage
+
+| Argument      | Default | Description                                             |
+|---------------|---------|---------------------------------------------------------|
+| `--cache-dir` |         | Path to a directory on host to use for caching purposes |
 
 ### `prepare` stage
 
