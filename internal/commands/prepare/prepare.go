@@ -23,6 +23,7 @@ var installGitlabRunnerScript string
 var concurrency uint64
 var cpuOverrideRaw string
 var memoryOverrideRaw string
+var customDirectoryMounts []string
 
 func NewCommand() *cobra.Command {
 	command := &cobra.Command{
@@ -37,6 +38,8 @@ func NewCommand() *cobra.Command {
 		"Override default image CPU configuration (number of CPUs or \"auto\")")
 	command.PersistentFlags().StringVar(&memoryOverrideRaw, "memory", "",
 		"Override default image memory configuration (size in megabytes or \"auto\")")
+	command.PersistentFlags().StringArrayVar(&customDirectoryMounts, "dir", []string{},
+		"\"--dir\" arguments to pass to \"tart run\", can be specified multiple times")
 
 	return command
 }
@@ -76,7 +79,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	err = vm.Start(config, gitLabEnv)
+	err = vm.Start(config, gitLabEnv, customDirectoryMounts)
 	if err != nil {
 		return err
 	}
