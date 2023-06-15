@@ -73,12 +73,20 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		gitlabRunnerConfig.BuildsDir = "/Volumes/My Shared Files/buildsdir"
 		buildsDir = os.ExpandEnv(buildsDir)
 		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalBuildsDir] = buildsDir
+
+		if err := os.MkdirAll(buildsDir, 0700); err != nil {
+			return err
+		}
 	}
 
 	if cacheDir != "" {
 		gitlabRunnerConfig.CacheDir = "/Volumes/My Shared Files/cachedir"
 		cacheDir = os.ExpandEnv(cacheDir)
 		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalCacheDir] = cacheDir
+
+		if err := os.MkdirAll(cacheDir, 0700); err != nil {
+			return err
+		}
 	}
 
 	jsonBytes, err := json.MarshalIndent(&gitlabRunnerConfig, "", "  ")
