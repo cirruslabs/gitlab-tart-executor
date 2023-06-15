@@ -143,9 +143,10 @@ that required paid sponsorship upon exceeding a free limit.
 
 ### `config` stage
 
-| Argument      | Default | Description                                             |
-|---------------|---------|---------------------------------------------------------|
-| `--cache-dir` |         | Path to a directory on host to use for caching purposes |
+| Argument       | Default | Description                                             |
+|----------------|---------|---------------------------------------------------------|
+| `--builds-dir` |         | Path to a directory on host to use for storing builds   |
+| `--cache-dir`  |         | Path to a directory on host to use for caching purposes |
 
 ### `prepare` stage
 

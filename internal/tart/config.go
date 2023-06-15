@@ -19,6 +19,11 @@ const (
 	// and remove repetition from the Config's struct declaration.
 	envPrefixTartExecutor = "TART_EXECUTOR_"
 
+	// EnvTartExecutorInternalBuildsDir is an internal environment variable
+	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
+	// by the user.
+	EnvTartExecutorInternalBuildsDir = "TART_EXECUTOR_INTERNAL_BUILDS_DIR"
+
 	// EnvTartExecutorInternalCacheDir is an internal environment variable
 	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
 	// by the user.

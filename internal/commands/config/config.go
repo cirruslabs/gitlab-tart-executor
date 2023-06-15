@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
@@ -9,6 +10,9 @@ import (
 	"os"
 )
 
+var ErrConfigFailed = errors.New("configuration stage failed")
+
+var buildsDir string
 var cacheDir string
 
 func NewCommand() *cobra.Command {
@@ -18,6 +22,8 @@ func NewCommand() *cobra.Command {
 		RunE:  runConfig,
 	}
 
+	command.PersistentFlags().StringVar(&buildsDir, "builds-dir", "",
+		"Path to a directory on host to use for storing builds")
 	command.PersistentFlags().StringVar(&cacheDir, "cache-dir", "",
 		"path to a directory on host to use for caching purposes")
 
@@ -53,12 +59,19 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	if tartConfig.HostDir && buildsDir != "" {
+		return fmt.Errorf("%w: --builds-dir and TART_EXECUTOR_HOST_DIR are mutually exclusive",
+			ErrConfigFailed)
+	}
 	if tartConfig.HostDir {
 		gitlabRunnerConfig.BuildsDir = "/Volumes/My Shared Files/hostdir"
 
 		if err := os.MkdirAll(gitLabEnv.HostDirPath(), 0700); err != nil {
 			return err
 		}
+	} else if buildsDir != "" {
+		gitlabRunnerConfig.BuildsDir = "/Volumes/My Shared Files/buildsdir"
+		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalBuildsDir] = buildsDir
 	}
 
 	if cacheDir != "" {
