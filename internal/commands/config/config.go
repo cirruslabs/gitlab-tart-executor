@@ -71,11 +71,13 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		}
 	} else if buildsDir != "" {
 		gitlabRunnerConfig.BuildsDir = "/Volumes/My Shared Files/buildsdir"
+		buildsDir = os.ExpandEnv(buildsDir)
 		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalBuildsDir] = buildsDir
 	}
 
 	if cacheDir != "" {
 		gitlabRunnerConfig.CacheDir = "/Volumes/My Shared Files/cachedir"
+		cacheDir = os.ExpandEnv(cacheDir)
 		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalCacheDir] = cacheDir
 	}
 
