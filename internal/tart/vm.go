@@ -90,12 +90,14 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts 
 		runArgs = append(runArgs, "--no-graphics")
 	}
 
-	if config.HostDir {
-		runArgs = append(runArgs, "--dir", fmt.Sprintf("hostdir:%s", gitLabEnv.HostDirPath()))
-	}
-
 	for _, customDirectoryMount := range customDirectoryMounts {
 		runArgs = append(runArgs, "--dir", customDirectoryMount)
+	}
+
+	if config.HostDir {
+		runArgs = append(runArgs, "--dir", fmt.Sprintf("hostdir:%s", gitLabEnv.HostDirPath()))
+	} else if buildsDir, ok := os.LookupEnv(EnvTartExecutorInternalBuildsDir); ok {
+		runArgs = append(runArgs, "--dir", fmt.Sprintf("buildsdir:%s", buildsDir))
 	}
 
 	if cacheDir, ok := os.LookupEnv(EnvTartExecutorInternalCacheDir); ok {
