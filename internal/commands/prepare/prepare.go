@@ -144,10 +144,17 @@ func additionalPullEnv(registry *gitlab.Registry) map[string]string {
 	tartRegistryUsername, tartRegistryUsernameOK := os.LookupEnv("CUSTOM_ENV_TART_REGISTRY_USERNAME")
 	tartRegistryPassword, tartRegistryPasswordOK := os.LookupEnv("CUSTOM_ENV_TART_REGISTRY_PASSWORD")
 	if tartRegistryUsernameOK && tartRegistryPasswordOK {
-		return map[string]string{
+		result := map[string]string{
 			"TART_REGISTRY_USERNAME": tartRegistryUsername,
 			"TART_REGISTRY_PASSWORD": tartRegistryPassword,
 		}
+
+		tartRegistryHostname, tartRegistryHostnameOK := os.LookupEnv("CUSTOM_ENV_TART_REGISTRY_HOSTNAME")
+		if tartRegistryHostnameOK {
+			result["TART_REGISTRY_HOSTNAME"] = tartRegistryHostname
+		}
+
+		return result
 	}
 
 	// Otherwise fallback to GitLab's provided registry credentials, if any
