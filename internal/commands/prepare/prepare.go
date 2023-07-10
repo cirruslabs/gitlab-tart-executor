@@ -153,6 +153,7 @@ func additionalPullEnv(registry *gitlab.Registry) map[string]string {
 	// Otherwise fallback to GitLab's provided registry credentials, if any
 	if registry != nil {
 		return map[string]string{
+			"TART_REGISTRY_HOSTNAME": registry.Address,
 			"TART_REGISTRY_USERNAME": registry.User,
 			"TART_REGISTRY_PASSWORD": registry.Password,
 		}
