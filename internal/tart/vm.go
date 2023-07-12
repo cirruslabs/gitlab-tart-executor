@@ -108,6 +108,9 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts 
 
 	cmd := exec.Command(nohupCommandName, runArgs...)
 
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
 	err := cmd.Start()
 	if err != nil {
 		return err
