@@ -8,12 +8,15 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"golang.org/x/crypto/ssh"
+	"io"
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 const tartCommandName = "tart"
@@ -108,16 +111,55 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts 
 
 	cmd := exec.Command(tartCommandName, runArgs...)
 
+	outputFile, err := os.OpenFile(vm.OutputPath(), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+
+	cmd.Stdout = outputFile
+	cmd.Stderr = outputFile
+
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setsid: true,
 	}
 
-	err := cmd.Start()
+	err = cmd.Start()
 	if err != nil {
 		return err
 	}
 
 	return cmd.Process.Release()
+}
+
+func (vm *VM) OutputPath() string {
+	return filepath.Join(os.TempDir(), fmt.Sprintf("%s-tart-run-output.log", vm.id))
+}
+
+func (vm *VM) MonitorOutput() {
+	outputFile, err := os.Open(vm.OutputPath())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to open VM's output file, "+
+			"looks like the VM wasn't started in \"prepare\" step?\n")
+
+		return
+	}
+	defer func() {
+		_ = outputFile.Close()
+	}()
+
+	for {
+		n, err := io.Copy(os.Stdout, outputFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to display VM's output: %v\n", err)
+
+			break
+		}
+		if n == 0 {
+			time.Sleep(100 * time.Millisecond)
+
+			continue
+		}
+	}
 }
 
 func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
