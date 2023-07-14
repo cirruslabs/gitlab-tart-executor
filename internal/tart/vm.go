@@ -108,9 +108,6 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts 
 
 	cmd := exec.Command(tartCommandName, runArgs...)
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setsid: true,
 	}
