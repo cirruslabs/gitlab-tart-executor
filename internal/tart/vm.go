@@ -13,10 +13,10 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 const tartCommandName = "tart"
-const nohupCommandName = "nohup"
 
 var (
 	ErrTartNotFound = errors.New("tart command not found")
@@ -80,7 +80,7 @@ func (vm *VM) cloneAndConfigure(
 }
 
 func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts []string) error {
-	var runArgs = []string{tartCommandName, "run"}
+	var runArgs = []string{"run"}
 
 	if config.Softnet {
 		runArgs = append(runArgs, "--net-softnet")
@@ -106,18 +106,20 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts 
 
 	runArgs = append(runArgs, vm.id)
 
-	cmd := exec.Command(nohupCommandName, runArgs...)
+	cmd := exec.Command(tartCommandName, runArgs...)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setsid: true,
+	}
 
 	err := cmd.Start()
 	if err != nil {
 		return err
 	}
 
-	// we need to release the process and nohup ensures it will survive after prepare exits
-	// run will use this VM for running scripts for stages
 	return cmd.Process.Release()
 }
 
