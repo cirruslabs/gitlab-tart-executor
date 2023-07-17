@@ -8,15 +8,18 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"golang.org/x/crypto/ssh"
+	"io"
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
+	"time"
 )
 
 const tartCommandName = "tart"
-const nohupCommandName = "nohup"
 
 var (
 	ErrTartNotFound = errors.New("tart command not found")
@@ -80,7 +83,7 @@ func (vm *VM) cloneAndConfigure(
 }
 
 func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts []string) error {
-	var runArgs = []string{tartCommandName, "run"}
+	var runArgs = []string{"run"}
 
 	if config.Softnet {
 		runArgs = append(runArgs, "--net-softnet")
@@ -106,19 +109,53 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts 
 
 	runArgs = append(runArgs, vm.id)
 
-	cmd := exec.Command(nohupCommandName, runArgs...)
+	cmd := exec.Command(tartCommandName, runArgs...)
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Start()
+	outputFile, err := os.OpenFile(vm.tartRunOutputPath(), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
 
-	// we need to release the process and nohup ensures it will survive after prepare exits
-	// run will use this VM for running scripts for stages
+	cmd.Stdout = outputFile
+	cmd.Stderr = outputFile
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setsid: true,
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return err
+	}
+
 	return cmd.Process.Release()
+}
+
+func (vm *VM) MonitorTartRunOutput() {
+	outputFile, err := os.Open(vm.tartRunOutputPath())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to open VM's output file, "+
+			"looks like the VM wasn't started in \"prepare\" step?\n")
+
+		return
+	}
+	defer func() {
+		_ = outputFile.Close()
+	}()
+
+	for {
+		n, err := io.Copy(os.Stdout, outputFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to display VM's output: %v\n", err)
+
+			break
+		}
+		if n == 0 {
+			time.Sleep(100 * time.Millisecond)
+
+			continue
+		}
+	}
 }
 
 func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
@@ -235,4 +272,15 @@ func firstNonEmptyLine(outputs ...string) string {
 	}
 
 	return ""
+}
+
+func (vm *VM) tartRunOutputPath() string {
+	// GitLab Runner redefines the TMPDIR environment variable for
+	// custom executors[1] and cleans it up (you can check that by
+	// following the "cmdOpts.Dir" xrefs, so we don't need to bother
+	// with that ourselves.
+	//
+	//nolint:lll
+	// [1]: https://gitlab.com/gitlab-org/gitlab-runner/-/blob/8f29a2558bd9e72bee1df34f6651db5ba48df029/executors/custom/command/command.go#L53
+	return filepath.Join(os.TempDir(), fmt.Sprintf("%s-tart-run-output.log", vm.id))
 }
