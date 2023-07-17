@@ -84,7 +84,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Monitor "tart run" command's output to detect errors
+	// Monitor "tart run" command's output so it's not silenced
 	go vm.MonitorOutput()
 
 	log.Println("Waiting for the VM to boot and be SSH-able...")
