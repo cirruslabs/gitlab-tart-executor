@@ -111,7 +111,7 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts 
 
 	cmd := exec.Command(tartCommandName, runArgs...)
 
-	outputFile, err := os.OpenFile(vm.OutputPath(), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
+	outputFile, err := os.OpenFile(vm.tartRunOutputPath(), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -131,12 +131,8 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts 
 	return cmd.Process.Release()
 }
 
-func (vm *VM) OutputPath() string {
-	return filepath.Join(os.TempDir(), fmt.Sprintf("%s-tart-run-output.log", vm.id))
-}
-
 func (vm *VM) MonitorTartRunOutput() {
-	outputFile, err := os.Open(vm.OutputPath())
+	outputFile, err := os.Open(vm.tartRunOutputPath())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to open VM's output file, "+
 			"looks like the VM wasn't started in \"prepare\" step?\n")
@@ -276,4 +272,8 @@ func firstNonEmptyLine(outputs ...string) string {
 	}
 
 	return ""
+}
+
+func (vm *VM) tartRunOutputPath() string {
+	return filepath.Join(os.TempDir(), fmt.Sprintf("%s-tart-run-output.log", vm.id))
 }
