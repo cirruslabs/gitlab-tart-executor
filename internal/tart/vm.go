@@ -275,5 +275,11 @@ func firstNonEmptyLine(outputs ...string) string {
 }
 
 func (vm *VM) tartRunOutputPath() string {
+	// GitLab Runner redefines the TMPDIR environment variable for
+	// custom executors and cleans it up (you can check that by
+	// following the "cmdOpts.Dir" xrefs, so we don't need to bother
+	// with that ourselves.
+	//
+	// [1]: https://gitlab.com/gitlab-org/gitlab-runner/-/blob/8f29a2558bd9e72bee1df34f6651db5ba48df029/executors/custom/command/command.go#L53
 	return filepath.Join(os.TempDir(), fmt.Sprintf("%s-tart-run-output.log", vm.id))
 }
