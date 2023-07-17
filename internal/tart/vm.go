@@ -135,7 +135,7 @@ func (vm *VM) OutputPath() string {
 	return filepath.Join(os.TempDir(), fmt.Sprintf("%s-tart-run-output.log", vm.id))
 }
 
-func (vm *VM) MonitorOutput() {
+func (vm *VM) MonitorTartRunOutput() {
 	outputFile, err := os.Open(vm.OutputPath())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to open VM's output file, "+
