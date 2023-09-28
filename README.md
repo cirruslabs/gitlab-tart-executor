@@ -69,7 +69,7 @@ test:
     - uname -a
 
   variables:
-    TART_EXECUTOR_HOST_DIR: true
+    TART_EXECUTOR_HOST_DIR: "true"
 ```
 
 ### Fully utilizing resources of the host
