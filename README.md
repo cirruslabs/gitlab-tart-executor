@@ -145,8 +145,8 @@ that required paid sponsorship upon exceeding a free limit.
 
 | Argument       | Default | Description                                             |
 |----------------|---------|---------------------------------------------------------|
-| `--builds-dir` |         | Path to a directory on host to use for storing builds   |
-| `--cache-dir`  |         | Path to a directory on host to use for caching purposes |
+| `--builds-dir` |         | Path to a directory on host to use for storing builds. Don't forget to mount `buildsdir` using `--dir buildsdir:/path/on/host/builds` in [prepare](#prepare-stage) stage.   |
+| `--cache-dir`  |         | Path to a directory on host to use for caching purposes. Don't forget to mount `cachedir` using `--dir cachedir:/path/on/host/cache` in [prepare](#prepare-stage) stage. |
 
 ### `prepare` stage
 
