@@ -24,7 +24,7 @@ var concurrency uint64
 var cpuOverrideRaw string
 var memoryOverrideRaw string
 var customDirectoryMounts []string
-var noAutoPrune bool
+var autoPrune bool
 
 func NewCommand() *cobra.Command {
 	command := &cobra.Command{
@@ -41,9 +41,9 @@ func NewCommand() *cobra.Command {
 		"Override default image memory configuration (size in megabytes or \"auto\")")
 	command.PersistentFlags().StringArrayVar(&customDirectoryMounts, "dir", []string{},
 		"\"--dir\" arguments to pass to \"tart run\", can be specified multiple times")
-	command.PersistentFlags().BoolVar(&noAutoPrune, "no-auto-prune", false,
-		"set \"TART_NO_AUTO_PRUNE=true\" environment variable for Tart invocations"+
-			"to disable the Tart's auto-pruning mechanism")
+	command.PersistentFlags().BoolVar(&autoPrune, "auto-prune", true,
+		"Whether to enable or disable the Tart's auto-pruning mechanism (sets the "+
+			"TART_NO_AUTO_PRUNE environment variable for Tart command invocations under the hood)")
 
 	return command
 }
@@ -59,7 +59,9 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if noAutoPrune {
+	// Auto-prune is enabled by default in Tart,
+	// so we only need to act when it's set to "false"
+	if !autoPrune {
 		if err := os.Setenv("TART_NO_AUTO_PRUNE", "true"); err != nil {
 			return err
 		}
