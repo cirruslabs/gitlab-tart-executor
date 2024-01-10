@@ -19,7 +19,10 @@ import (
 	"time"
 )
 
-const tartCommandName = "tart"
+const (
+	tartCommandName         = "tart"
+	tartCommandHomebrewPath = "/opt/homebrew/bin/tart"
+)
 
 var (
 	ErrTartNotFound = errors.New("tart command not found")
@@ -109,7 +112,12 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts 
 
 	runArgs = append(runArgs, vm.id)
 
-	cmd := exec.Command(tartCommandName, runArgs...)
+	tartCommandPath, err := tartCommandPath()
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command(tartCommandPath, runArgs...)
 
 	outputFile, err := os.OpenFile(vm.tartRunOutputPath(), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
 	if err != nil {
@@ -230,7 +238,12 @@ func TartExecWithEnv(
 	env map[string]string,
 	args ...string,
 ) (string, string, error) {
-	cmd := exec.CommandContext(ctx, tartCommandName, args...)
+	tartCommandPath, err := tartCommandPath()
+	if err != nil {
+		return "", "", err
+	}
+
+	cmd := exec.CommandContext(ctx, tartCommandPath, args...)
 
 	// Base environment
 	cmd.Env = cmd.Environ()
@@ -245,14 +258,11 @@ func TartExecWithEnv(
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
-		if errors.Is(err, exec.ErrNotFound) {
-			return "", "", fmt.Errorf("%w: %s command not found in PATH, make sure Tart is installed",
-				ErrTartNotFound, tartCommandName)
-		}
+		var exitError *exec.ExitError
 
-		if _, ok := err.(*exec.ExitError); ok {
+		if errors.As(err, &exitError) {
 			// Tart command failed, redefine the error
 			// to be the Tart-specific output
 			err = fmt.Errorf("%w: %q", ErrTartFailed, firstNonEmptyLine(stderr.String(), stdout.String()))
@@ -283,4 +293,24 @@ func (vm *VM) tartRunOutputPath() string {
 	//nolint:lll
 	// [1]: https://gitlab.com/gitlab-org/gitlab-runner/-/blob/8f29a2558bd9e72bee1df34f6651db5ba48df029/executors/custom/command/command.go#L53
 	return filepath.Join(os.TempDir(), fmt.Sprintf("%s-tart-run-output.log", vm.id))
+}
+
+func tartCommandPath() (string, error) {
+	result, err := exec.LookPath(tartCommandName)
+	if err != nil {
+		// Perhaps GitLab Runner was invoked from a launchd user agent
+		// with a limited PATH[1], check if Tart is available in the
+		// Homebrew's binary directory before completely failing.
+		//
+		// [1]: https://github.com/cirruslabs/gitlab-tart-executor/issues/47
+		_, err := os.Stat(tartCommandHomebrewPath)
+		if err == nil {
+			return tartCommandHomebrewPath, nil
+		}
+
+		return "", fmt.Errorf("%w: %s command not found in PATH, make sure Tart is installed",
+			ErrTartNotFound, tartCommandName)
+	}
+
+	return result, nil
 }
