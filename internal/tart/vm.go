@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/avast/retry-go"
+	"github.com/avast/retry-go/v4"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"golang.org/x/crypto/ssh"
 	"io"
@@ -172,7 +172,8 @@ func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
 		netConn, err = dialer.DialContext(ctx, "tcp", addr)
 
 		return err
-	}, retry.Context(ctx)); err != nil {
+	}, retry.Context(ctx), retry.Attempts(0), retry.Delay(time.Second),
+		retry.DelayType(retry.FixedDelay)); err != nil {
 		return nil, fmt.Errorf("%w: failed to connect via SSH: %v", ErrVMFailed, err)
 	}
 

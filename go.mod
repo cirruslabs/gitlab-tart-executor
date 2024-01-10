@@ -4,12 +4,12 @@ go 1.19
 
 require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137
-	github.com/avast/retry-go v3.0.0+incompatible
+	github.com/avast/retry-go/v4 v4.5.1
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/shirou/gopsutil/v3 v3.23.4
 	github.com/spf13/cobra v1.6.1
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.7.0
 )
 
