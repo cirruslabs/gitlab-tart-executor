@@ -5,9 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/avast/retry-go/v4"
-	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"net"
 	"os"
@@ -17,6 +14,10 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/avast/retry-go/v4"
+	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
+	"golang.org/x/crypto/ssh"
 )
 
 const (
@@ -173,18 +174,6 @@ func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
 	}
 	addr := ip + ":22"
 
-	var netConn net.Conn
-	if err := retry.Do(func() error {
-		dialer := net.Dialer{}
-
-		netConn, err = dialer.DialContext(ctx, "tcp", addr)
-
-		return err
-	}, retry.Context(ctx), retry.Attempts(0), retry.Delay(time.Second),
-		retry.DelayType(retry.FixedDelay)); err != nil {
-		return nil, fmt.Errorf("%w: failed to connect via SSH: %v", ErrVMFailed, err)
-	}
-
 	sshConfig := &ssh.ClientConfig{
 		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
 			return nil
@@ -195,12 +184,29 @@ func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
 		},
 	}
 
-	sshConn, chans, reqs, err := ssh.NewClientConn(netConn, addr, sshConfig)
-	if err != nil {
+	var sshClient *ssh.Client
+
+	if err := retry.Do(func() error {
+		dialer := net.Dialer{}
+
+		netConn, err := dialer.DialContext(ctx, "tcp", addr)
+		if err != nil {
+			return err
+		}
+
+		sshConn, chans, reqs, err := ssh.NewClientConn(netConn, addr, sshConfig)
+		if err != nil {
+			return err
+		}
+
+		sshClient = ssh.NewClient(sshConn, chans, reqs)
+		return nil
+	}, retry.Context(ctx), retry.Attempts(0), retry.Delay(time.Second),
+		retry.DelayType(retry.FixedDelay)); err != nil {
 		return nil, fmt.Errorf("%w: failed to connect via SSH: %v", ErrVMFailed, err)
 	}
 
-	return ssh.NewClient(sshConn, chans, reqs), nil
+	return sshClient, nil
 }
 
 func (vm *VM) IP(ctx context.Context) (string, error) {
