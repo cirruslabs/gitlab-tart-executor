@@ -200,7 +200,7 @@ func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
 		}
 
 		sshClient = ssh.NewClient(sshConn, chans, reqs)
-		return err
+		return nil
 	}, retry.Context(ctx), retry.Attempts(0), retry.Delay(time.Second),
 		retry.DelayType(retry.FixedDelay)); err != nil {
 		return nil, fmt.Errorf("%w: failed to connect via SSH: %v", ErrVMFailed, err)
