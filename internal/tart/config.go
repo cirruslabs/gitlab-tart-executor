@@ -38,7 +38,7 @@ type Config struct {
 	AlwaysPull          bool   `env:"ALWAYS_PULL"  envDefault:"true"`
 	HostDir             bool   `env:"HOST_DIR"`
 	Shell               string `env:"SHELL"`
-	InstallGitlabRunner bool   `env:"INSTALL_GITLAB_RUNNER"`
+	InstallGitlabRunner string `env:"INSTALL_GITLAB_RUNNER"`
 	Timezone            string `env:"TIMEZONE"`
 }
 
