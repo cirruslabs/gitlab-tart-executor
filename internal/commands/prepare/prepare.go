@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"github.com/Masterminds/semver/v3"
 	"github.com/alecthomas/units"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
@@ -16,6 +17,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var ErrFailed = errors.New("\"prepare\" stage failed")
@@ -116,22 +118,9 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 	log.Println("Was able to SSH!")
 
-	var installGitlabRunnerScript string
-
-	switch config.InstallGitlabRunner {
-	case "brew":
-		installGitlabRunnerScript = installGitlabRunnerBrewScript
-	case "curl":
-		installGitlabRunnerScript = installGitlabRunnerCurlScript
-	case "true", "yes", "on":
-		log.Printf("%q value for TART_EXECUTOR_INSTALL_GITLAB_RUNNER will deprecated "+
-			"in next version, please use either \"brew\" or \"curl\"", config.InstallGitlabRunner)
-		installGitlabRunnerScript = installGitlabRunnerScriptAuto
-	case "":
-		// do not set installGitlabRunnerScript to avoid installing GitLab Runner
-	default:
-		return fmt.Errorf("%w: TART_EXECUTOR_INSTALL_GITLAB_RUNNER only accepts "+
-			"\"brew\" or \"curl\" arguments, got %q", ErrFailed, config.InstallGitlabRunner)
+	installGitlabRunnerScript, err := installGitlabRunnerScript(config.InstallGitlabRunner)
+	if err != nil {
+		return err
 	}
 
 	if installGitlabRunnerScript != "" {
@@ -250,4 +239,30 @@ func parseMemoryOverride(ctx context.Context, override string) (uint64, error) {
 
 	// Exact override
 	return strconv.ParseUint(override, 10, 64)
+}
+
+func installGitlabRunnerScript(installGitlabRunner string) (string, error) {
+	switch installGitlabRunner {
+	case "brew":
+		return installGitlabRunnerBrewScript, nil
+	case "curl":
+		return installGitlabRunnerCurlScript, nil
+	case "true", "yes", "on":
+		log.Printf("%q value for TART_EXECUTOR_INSTALL_GITLAB_RUNNER will deprecated "+
+			"in next version, please use either \"brew\", \"curl\" or \"major.minor.patch\"",
+			installGitlabRunner)
+
+		return installGitlabRunnerScriptAuto, nil
+	case "":
+		return "", nil
+	default:
+		version, err := semver.NewVersion(installGitlabRunner)
+		if err == nil {
+			return strings.ReplaceAll(installGitlabRunnerCurlScript, "${GITLAB_RUNNER_VERSION}",
+				"v"+version.String()), nil
+		}
+
+		return "", fmt.Errorf("%w: TART_EXECUTOR_INSTALL_GITLAB_RUNNER only accepts "+
+			"\"brew\", \"curl\" or \"major.minor.patch\", got %q", ErrFailed, installGitlabRunner)
+	}
 }
