@@ -10,7 +10,8 @@
 #
 set -euo pipefail
 
-GITLAB_RUNNER_URL="https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-darwin-arm64"
+GITLAB_RUNNER_VERSION="latest"
+GITLAB_RUNNER_URL="https://gitlab-runner-downloads.s3.amazonaws.com/${GITLAB_RUNNER_VERSION}/binaries/gitlab-runner-darwin-arm64"
 GITLAB_RUNNER_PATH="/usr/local/bin/gitlab-runner"
 
 # Is GitLab Runner already installed?
