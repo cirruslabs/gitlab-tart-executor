@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
 	"github.com/alecthomas/units"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
@@ -17,8 +18,16 @@ import (
 	"strconv"
 )
 
-//go:embed install-gitlab-runner.sh
-var installGitlabRunnerScript string
+var ErrFailed = errors.New("\"prepare\" stage failed")
+
+//go:embed install-gitlab-runner-auto.sh
+var installGitlabRunnerScriptAuto string
+
+//go:embed install-gitlab-runner-brew.sh
+var installGitlabRunnerBrewScript string
+
+//go:embed install-gitlab-runner-curl.sh
+var installGitlabRunnerCurlScript string
 
 var concurrency uint64
 var cpuOverrideRaw string
@@ -107,7 +116,25 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 	log.Println("Was able to SSH!")
 
-	if config.InstallGitlabRunner {
+	var installGitlabRunnerScript string
+
+	switch config.InstallGitlabRunner {
+	case "brew":
+		installGitlabRunnerScript = installGitlabRunnerBrewScript
+	case "curl":
+		installGitlabRunnerScript = installGitlabRunnerCurlScript
+	case "true", "yes", "on":
+		log.Printf("%q value for TART_EXECUTOR_INSTALL_GITLAB_RUNNER will deprecated "+
+			"in next version, please use either \"brew\" or \"curl\"", config.InstallGitlabRunner)
+		installGitlabRunnerScript = installGitlabRunnerScriptAuto
+	case "":
+		// do not set installGitlabRunnerScript to avoid installing GitLab Runner
+	default:
+		return fmt.Errorf("%w: TART_EXECUTOR_INSTALL_GITLAB_RUNNER only accepts "+
+			"\"brew\" or \"curl\" arguments, got %q", ErrFailed, config.InstallGitlabRunner)
+	}
+
+	if installGitlabRunnerScript != "" {
 		log.Println("Installing GitLab Runner...")
 
 		session, err := ssh.NewSession()
