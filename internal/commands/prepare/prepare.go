@@ -90,8 +90,14 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 	if config.AlwaysPull {
 		log.Printf("Pulling the latest version of %s...\n", gitLabEnv.JobImage)
-		_, _, err := tart.TartExecWithEnv(cmd.Context(), additionalPullEnv(gitLabEnv.Registry),
-			"pull", gitLabEnv.JobImage)
+
+		args := []string{"pull", gitLabEnv.JobImage}
+
+		if config.InsecurePull {
+			args = append(args, "--insecure")
+		}
+
+		_, _, err := tart.TartExecWithEnv(cmd.Context(), additionalPullEnv(gitLabEnv.Registry), args...)
 		if err != nil {
 			return err
 		}
