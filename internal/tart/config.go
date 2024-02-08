@@ -36,6 +36,7 @@ type Config struct {
 	Softnet             bool   `env:"SOFTNET"`
 	Headless            bool   `env:"HEADLESS"  envDefault:"true"`
 	AlwaysPull          bool   `env:"ALWAYS_PULL"  envDefault:"true"`
+	InsecurePull        bool   `env:"INSECURE_PULL"  envDefault:"false"`
 	HostDir             bool   `env:"HOST_DIR"`
 	Shell               string `env:"SHELL"`
 	InstallGitlabRunner string `env:"INSTALL_GITLAB_RUNNER"`
