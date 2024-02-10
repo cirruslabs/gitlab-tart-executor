@@ -44,6 +44,7 @@ func ExistingVM(gitLabEnv gitlab.Env) *VM {
 func CreateNewVM(
 	ctx context.Context,
 	gitLabEnv gitlab.Env,
+	config Config,
 	cpuOverride uint64,
 	memoryOverride uint64,
 ) (*VM, error) {
@@ -51,7 +52,7 @@ func CreateNewVM(
 		id: gitLabEnv.VirtualMachineID(),
 	}
 
-	if err := vm.cloneAndConfigure(ctx, gitLabEnv, cpuOverride, memoryOverride); err != nil {
+	if err := vm.cloneAndConfigure(ctx, gitLabEnv, config, cpuOverride, memoryOverride); err != nil {
 		return nil, fmt.Errorf("failed to clone the VM: %w", err)
 	}
 
@@ -61,10 +62,18 @@ func CreateNewVM(
 func (vm *VM) cloneAndConfigure(
 	ctx context.Context,
 	gitLabEnv gitlab.Env,
+	config Config,
 	cpuOverride uint64,
 	memoryOverride uint64,
 ) error {
-	_, _, err := TartExec(ctx, "clone", gitLabEnv.JobImage, vm.id)
+	cloneArgs := []string{"clone", gitLabEnv.JobImage, vm.id}
+
+	if config.PullConcurrency != 0 {
+		cloneArgs = append(cloneArgs, "--concurrency",
+			strconv.FormatUint(uint64(config.PullConcurrency), 10))
+	}
+
+	_, _, err := TartExec(ctx, cloneArgs...)
 	if err != nil {
 		return err
 	}

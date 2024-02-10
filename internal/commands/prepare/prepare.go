@@ -110,7 +110,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	}
 
 	log.Println("Cloning and configuring a new VM...")
-	vm, err := tart.CreateNewVM(cmd.Context(), *gitLabEnv, cpuOverride, memoryOverride)
+	vm, err := tart.CreateNewVM(cmd.Context(), *gitLabEnv, config, cpuOverride, memoryOverride)
 	if err != nil {
 		return err
 	}
