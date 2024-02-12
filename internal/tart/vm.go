@@ -68,6 +68,10 @@ func (vm *VM) cloneAndConfigure(
 ) error {
 	cloneArgs := []string{"clone", gitLabEnv.JobImage, vm.id}
 
+	if config.InsecurePull {
+		cloneArgs = append(cloneArgs, "--insecure")
+	}
+
 	if config.PullConcurrency != 0 {
 		cloneArgs = append(cloneArgs, "--concurrency",
 			strconv.FormatUint(uint64(config.PullConcurrency), 10))
