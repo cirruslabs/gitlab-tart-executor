@@ -59,6 +59,7 @@ func NewCommand() *cobra.Command {
 	return command
 }
 
+//nolint:gocognit // looks good for now
 func runPrepareVM(cmd *cobra.Command, args []string) error {
 	cpuOverride, err := parseCPUOverride(cmd.Context(), cpuOverrideRaw)
 	if err != nil {
@@ -91,20 +92,25 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	if config.AlwaysPull {
 		log.Printf("Pulling the latest version of %s...\n", gitLabEnv.JobImage)
 
-		args := []string{"pull", gitLabEnv.JobImage}
+		pullArgs := []string{"pull", gitLabEnv.JobImage}
 
 		if config.InsecurePull {
-			args = append(args, "--insecure")
+			pullArgs = append(pullArgs, "--insecure")
 		}
 
-		_, _, err := tart.TartExecWithEnv(cmd.Context(), additionalPullEnv(gitLabEnv.Registry), args...)
+		if config.PullConcurrency != 0 {
+			pullArgs = append(pullArgs, "--concurrency",
+				strconv.FormatUint(uint64(config.PullConcurrency), 10))
+		}
+
+		_, _, err := tart.TartExecWithEnv(cmd.Context(), additionalPullEnv(gitLabEnv.Registry), pullArgs...)
 		if err != nil {
 			return err
 		}
 	}
 
 	log.Println("Cloning and configuring a new VM...")
-	vm, err := tart.CreateNewVM(cmd.Context(), *gitLabEnv, cpuOverride, memoryOverride)
+	vm, err := tart.CreateNewVM(cmd.Context(), *gitLabEnv, config, cpuOverride, memoryOverride)
 	if err != nil {
 		return err
 	}
