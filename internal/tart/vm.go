@@ -99,7 +99,12 @@ func (vm *VM) cloneAndConfigure(
 	return nil
 }
 
-func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts []string) error {
+func (vm *VM) Start(
+	config Config,
+	gitLabEnv *gitlab.Env,
+	customDirectoryMounts []string,
+	customDiskMounts []string,
+) error {
 	var runArgs = []string{"run"}
 
 	if config.Softnet {
@@ -112,6 +117,10 @@ func (vm *VM) Start(config Config, gitLabEnv *gitlab.Env, customDirectoryMounts 
 
 	for _, customDirectoryMount := range customDirectoryMounts {
 		runArgs = append(runArgs, "--dir", customDirectoryMount)
+	}
+
+	for _, customDiskMount := range customDiskMounts {
+		runArgs = append(runArgs, "--disk", customDiskMount)
 	}
 
 	if config.HostDir {

@@ -35,6 +35,7 @@ var concurrency uint64
 var cpuOverrideRaw string
 var memoryOverrideRaw string
 var customDirectoryMounts []string
+var customDiskMounts []string
 var autoPrune bool
 
 func NewCommand() *cobra.Command {
@@ -52,6 +53,8 @@ func NewCommand() *cobra.Command {
 		"Override default image memory configuration (size in megabytes or \"auto\")")
 	command.PersistentFlags().StringArrayVar(&customDirectoryMounts, "dir", []string{},
 		"\"--dir\" arguments to pass to \"tart run\", can be specified multiple times")
+	command.PersistentFlags().StringArrayVar(&customDiskMounts, "disk", []string{},
+		"\"--disk\" arguments to pass to \"tart run\", can be specified multiple times")
 	command.PersistentFlags().BoolVar(&autoPrune, "auto-prune", true,
 		"Whether to enable or disable the Tart's auto-pruning mechanism (sets the "+
 			"TART_NO_AUTO_PRUNE environment variable for Tart command invocations under the hood)")
@@ -114,7 +117,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	err = vm.Start(config, gitLabEnv, customDirectoryMounts)
+	err = vm.Start(config, gitLabEnv, customDirectoryMounts, customDiskMounts)
 	if err != nil {
 		return err
 	}
