@@ -12,22 +12,31 @@ import (
 
 var ErrConfigFailed = errors.New("configuration stage failed")
 
-var buildsDir string
-var cacheDir string
+var (
+	buildsDir string
+	cacheDir  string
+
+	guestBuildsDir string
+	guestCacheDir  string
+)
 
 func NewCommand() *cobra.Command {
-	command := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "config",
 		Short: "Configure GitLab Runner",
 		RunE:  runConfig,
 	}
 
-	command.PersistentFlags().StringVar(&buildsDir, "builds-dir", "",
-		"Path to a directory on host to use for storing builds")
-	command.PersistentFlags().StringVar(&cacheDir, "cache-dir", "",
+	cmd.PersistentFlags().StringVar(&buildsDir, "builds-dir", "",
+		"path to a directory on host to use for storing builds")
+	cmd.PersistentFlags().StringVar(&cacheDir, "cache-dir", "",
 		"path to a directory on host to use for caching purposes")
+	cmd.PersistentFlags().StringVar(&guestBuildsDir, "guest-builds-dir", "",
+		"path to a directory in guest to use for storing builds")
+	cmd.PersistentFlags().StringVar(&guestCacheDir, "guest-cache-dir", "",
+		"path to a directory in guest to use for caching purposes")
 
-	return command
+	return cmd
 }
 
 func runConfig(cmd *cobra.Command, args []string) error {
@@ -59,17 +68,35 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// Validate environment variables and command-line arguments combinations
 	if tartConfig.HostDir && buildsDir != "" {
 		return fmt.Errorf("%w: --builds-dir and TART_EXECUTOR_HOST_DIR are mutually exclusive",
 			ErrConfigFailed)
 	}
-	if tartConfig.HostDir {
+	if tartConfig.HostDir && guestBuildsDir != "" {
+		return fmt.Errorf("%w: --guest-builds-dir and TART_EXECUTOR_HOST_DIR are mutually exclusive",
+			ErrConfigFailed)
+	}
+
+	if buildsDir != "" && guestBuildsDir != "" {
+		return fmt.Errorf("%w: --builds-dir and --guest-builds-dir are mutually exclusive",
+			ErrConfigFailed)
+	}
+
+	if cacheDir != "" && guestCacheDir != "" {
+		return fmt.Errorf("%w: --cache-dir and --guest-cache-dir are mutually exclusive",
+			ErrConfigFailed)
+	}
+
+	// Figure out the builds directory override to use
+	switch {
+	case tartConfig.HostDir:
 		gitlabRunnerConfig.BuildsDir = "/Volumes/My Shared Files/hostdir"
 
 		if err := os.MkdirAll(gitLabEnv.HostDirPath(), 0700); err != nil {
 			return err
 		}
-	} else if buildsDir != "" {
+	case buildsDir != "":
 		gitlabRunnerConfig.BuildsDir = "/Volumes/My Shared Files/buildsdir"
 		buildsDir = os.ExpandEnv(buildsDir)
 		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalBuildsDir] = buildsDir
@@ -77,9 +104,13 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		if err := os.MkdirAll(buildsDir, 0700); err != nil {
 			return err
 		}
+	case guestBuildsDir != "":
+		gitlabRunnerConfig.BuildsDir = guestBuildsDir
 	}
 
-	if cacheDir != "" {
+	// Figure out the cache directory override to use
+	switch {
+	case cacheDir != "":
 		gitlabRunnerConfig.CacheDir = "/Volumes/My Shared Files/cachedir"
 		cacheDir = os.ExpandEnv(cacheDir)
 		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalCacheDir] = cacheDir
@@ -87,6 +118,8 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		if err := os.MkdirAll(cacheDir, 0700); err != nil {
 			return err
 		}
+	case guestCacheDir != "":
+		gitlabRunnerConfig.CacheDir = guestCacheDir
 	}
 
 	jsonBytes, err := json.MarshalIndent(&gitlabRunnerConfig, "", "  ")
