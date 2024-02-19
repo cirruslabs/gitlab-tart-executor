@@ -143,10 +143,14 @@ that required paid sponsorship upon exceeding a free limit.
 
 ### `config` stage
 
-| Argument       | Default | Description                                             |
-|----------------|---------|---------------------------------------------------------|
-| `--builds-dir` |         | Path to a directory on host to use for storing builds   |
-| `--cache-dir`  |         | Path to a directory on host to use for caching purposes |
+| Argument                         | Default | Description                                                                                                                                                                                           |
+|----------------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--builds-dir`                   |         | Path to a directory on host to use for storing builds, automatically mounts that directory to the guest VM (mutually exclusive with `--guest-builds-dir`)                                             |
+| `--cache-dir`                    |         | Path to a directory on host to use for caching purposes, automatically mounts that directory to the guest VM (mutually exclusive with `--guest-cache-dir`)                                            |
+| `--guest-builds-dir`<sup>1</sup> |         | Path to a directory in guest to use for storing builds, useful when mounting a block device (via [`--disk` command-line argument](#prepare-stage)) to the VM (mutually exclusive with `--builds-dir`) |
+| `--guest-cache-dir`<sup>1</sup>  |         | Path to a directory in guest to use for caching purposes, useful when mounting a block device (via [`--disk` command-line argument](#prepare-stage) to the VM (mutually exclusive with `--cache-dir`) |
+
+<sup>1</sup>: this is an advanced feature which should only be resorted to when the standard directory sharing via `--builds-dir` and `--cache-dir` is not sufficient for some reason.
 
 ### `prepare` stage
 
