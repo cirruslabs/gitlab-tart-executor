@@ -28,13 +28,17 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.PersistentFlags().StringVar(&buildsDir, "builds-dir", "",
-		"path to a directory on host to use for storing builds")
+		"path to a directory on host to use for storing builds, automatically mounts that directory "+
+			"to the guest VM, mutually exclusive with \"--guest-builds-dir\"")
 	cmd.PersistentFlags().StringVar(&cacheDir, "cache-dir", "",
-		"path to a directory on host to use for caching purposes")
+		"path to a directory on host to use for caching purposes, automatically mounts that directory "+
+			"to the guest VM, mutually exclusive with \"--guest-cache-dir\"")
 	cmd.PersistentFlags().StringVar(&guestBuildsDir, "guest-builds-dir", "",
-		"path to a directory in guest to use for storing builds")
+		"path to a directory in guest to use for storing builds, useful when mounting a block device "+
+			"via \"--disk\" command-line argument (mutually exclusive with \"--builds-dir\")")
 	cmd.PersistentFlags().StringVar(&guestCacheDir, "guest-cache-dir", "",
-		"path to a directory in guest to use for caching purposes")
+		"path to a directory in guest to use for caching purposes, useful when mounting a block device "+
+			"via \"--disk\" command-line argument (mutually exclusive with \"--cache-dir\")")
 
 	return cmd
 }
