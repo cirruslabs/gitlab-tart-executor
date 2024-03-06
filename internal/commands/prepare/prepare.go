@@ -181,6 +181,39 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		log.Printf("Timezone was set to %s!\n", tz)
 	}
 
+	dirsToMount := []string{}
+	if config.HostDir {
+		dirsToMount = append(dirsToMount, "hostdir")
+	}
+	if _, ok := os.LookupEnv(tart.EnvTartExecutorInternalBuildsDir); ok {
+		dirsToMount = append(dirsToMount, "buildsdir")
+	}
+	if _, ok := os.LookupEnv(tart.EnvTartExecutorInternalCacheDir); ok {
+		dirsToMount = append(dirsToMount, "cachedir")
+	}
+
+	for _, dirToMount := range dirsToMount {
+		log.Printf("Mounting %s...\n", dirToMount)
+
+		session, err := ssh.NewSession()
+		if err != nil {
+			return err
+		}
+		defer session.Close()
+
+		session.Stdin = bytes.NewBufferString(fmt.Sprintf("mount_virtiofs tart.virtiofs.%s /Users/%s/%s\n", dirToMount, config.SSHUsername, dirToMount))
+		session.Stdout = os.Stdout
+		session.Stderr = os.Stderr
+
+		if err := session.Shell(); err != nil {
+			return err
+		}
+
+		if err := session.Wait(); err != nil {
+			return err
+		}
+	}
+
 	log.Println("VM is ready.")
 
 	return ssh.Close()
