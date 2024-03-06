@@ -201,7 +201,11 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		}
 		defer session.Close()
 
-		session.Stdin = bytes.NewBufferString(fmt.Sprintf("mount_virtiofs tart.virtiofs.%s /Users/%s/%s\n", dirToMount, config.SSHUsername, dirToMount))
+		mountScript := fmt.Sprintf(
+			"mount_virtiofs tart.virtiofs.%s /Users/%s/%s\n",
+			dirToMount, config.SSHUsername, dirToMount,
+		)
+		session.Stdin = bytes.NewBufferString(mountScript)
 		session.Stdout = os.Stdout
 		session.Stderr = os.Stderr
 
