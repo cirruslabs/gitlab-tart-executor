@@ -201,11 +201,15 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		}
 		defer session.Close()
 
+		mkdirScript := fmt.Sprintf(
+			"mkdir -p /Users/%s/%s",
+			config.SSHUsername, dirToMount,
+		)
 		mountScript := fmt.Sprintf(
-			"mount_virtiofs tart.virtiofs.%s /Users/%s/%s\n",
+			"mount_virtiofs tart.virtiofs.%s /Users/%s/%s",
 			dirToMount, config.SSHUsername, dirToMount,
 		)
-		session.Stdin = bytes.NewBufferString(mountScript)
+		session.Stdin = bytes.NewBufferString(strings.Join([]string{mkdirScript, mountScript, ""}, "\n")
 		session.Stdout = os.Stdout
 		session.Stderr = os.Stderr
 
