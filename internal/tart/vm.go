@@ -194,7 +194,7 @@ func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	addr := ip + ":22"
+	addr := fmt.Sprintf("%s:%d", ip, config.SSHPort)
 
 	sshConfig := &ssh.ClientConfig{
 		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {

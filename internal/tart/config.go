@@ -33,6 +33,7 @@ const (
 type Config struct {
 	SSHUsername         string `env:"SSH_USERNAME" envDefault:"admin"`
 	SSHPassword         string `env:"SSH_PASSWORD" envDefault:"admin"`
+	SSHPort             uint16 `env:"SSH_PORT" envDefault:"22"`
 	Softnet             bool   `env:"SOFTNET"`
 	Headless            bool   `env:"HEADLESS"  envDefault:"true"`
 	AlwaysPull          bool   `env:"ALWAYS_PULL"  envDefault:"true"`
