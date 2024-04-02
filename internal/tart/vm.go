@@ -124,13 +124,13 @@ func (vm *VM) Start(
 	}
 
 	if config.HostDir {
-		runArgs = append(runArgs, "--dir", fmt.Sprintf("hostdir:%s", gitLabEnv.HostDirPath()))
+		runArgs = append(runArgs, "--dir", fmt.Sprintf("%s:tag=tart.virtiofs.hostdir", gitLabEnv.HostDirPath()))
 	} else if buildsDir, ok := os.LookupEnv(EnvTartExecutorInternalBuildsDir); ok {
-		runArgs = append(runArgs, "--dir", fmt.Sprintf("buildsdir:%s", buildsDir))
+		runArgs = append(runArgs, "--dir", fmt.Sprintf("%s:tag=tart.virtiofs.buildsdir", buildsDir))
 	}
 
 	if cacheDir, ok := os.LookupEnv(EnvTartExecutorInternalCacheDir); ok {
-		runArgs = append(runArgs, "--dir", fmt.Sprintf("cachedir:%s", cacheDir))
+		runArgs = append(runArgs, "--dir", fmt.Sprintf("%s:tag=tart.virtiofs.cachedir", cacheDir))
 	}
 
 	runArgs = append(runArgs, vm.id)

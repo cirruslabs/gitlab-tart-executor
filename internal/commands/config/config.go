@@ -95,13 +95,13 @@ func runConfig(cmd *cobra.Command, args []string) error {
 	// Figure out the builds directory override to use
 	switch {
 	case tartConfig.HostDir:
-		gitlabRunnerConfig.BuildsDir = "/Volumes/My Shared Files/hostdir"
+		gitlabRunnerConfig.BuildsDir = fmt.Sprintf("/Users/%s/hostdir", tartConfig.SSHUsername)
 
 		if err := os.MkdirAll(gitLabEnv.HostDirPath(), 0700); err != nil {
 			return err
 		}
 	case buildsDir != "":
-		gitlabRunnerConfig.BuildsDir = "/Volumes/My Shared Files/buildsdir"
+		gitlabRunnerConfig.BuildsDir = fmt.Sprintf("/Users/%s/buildsdir", tartConfig.SSHUsername)
 		buildsDir = os.ExpandEnv(buildsDir)
 		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalBuildsDir] = buildsDir
 
@@ -115,7 +115,7 @@ func runConfig(cmd *cobra.Command, args []string) error {
 	// Figure out the cache directory override to use
 	switch {
 	case cacheDir != "":
-		gitlabRunnerConfig.CacheDir = "/Volumes/My Shared Files/cachedir"
+		gitlabRunnerConfig.CacheDir = fmt.Sprintf("/Users/%s/cachedir", tartConfig.SSHUsername)
 		cacheDir = os.ExpandEnv(cacheDir)
 		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalCacheDir] = cacheDir
 
