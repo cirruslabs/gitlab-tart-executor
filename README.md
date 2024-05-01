@@ -150,8 +150,7 @@ that required paid sponsorship upon exceeding a free limit.
 | `--guest-builds-dir`<sup>1</sup> |         | Path to a directory in guest to use for storing builds, useful when mounting a block device (via [`--disk` command-line argument](#prepare-stage)) to the VM (mutually exclusive with `--builds-dir`) |
 | `--guest-cache-dir`<sup>1</sup>  |         | Path to a directory in guest to use for caching purposes, useful when mounting a block device (via [`--disk` command-line argument](#prepare-stage) to the VM (mutually exclusive with `--cache-dir`) |
 
-<sup>1</sup>: this is an advanced feature which should only be resorted to when the standard directory sharing
-via `--builds-dir` and `--cache-dir` is not sufficient for some reason.
+<sup>1</sup>: this is an advanced feature which should only be resorted to when the standard directory sharing via `--builds-dir` and `--cache-dir` is not sufficient for some reason.
 
 ### `prepare` stage
 
@@ -164,8 +163,7 @@ via `--builds-dir` and `--cache-dir` is not sufficient for some reason.
 | `--disk`        |             | `--disk` arguments to pass to `tart run`, can be specified multiple times                                                                                       |
 | `--auto-prune`  | true        | Whether to enable or disable the Tart's auto-pruning mechanism (sets the `TART_NO_AUTO_PRUNE` environment variable for Tart command invocations under the hood) |
 
-<sup>1</sup>: automatically distributes all host resources according to the concurrency level (for example, VM gets all
-of the host CPU and RAM assigned when `--concurrency` is 1, and half of that when `--concurrency` is 2)
+<sup>1</sup>: automatically distributes all host resources according to the concurrency level (for example, VM gets all of the host CPU and RAM assigned when `--concurrency` is 1, and half of that when `--concurrency` is 2)
 
 ## Supported environment variables
 
