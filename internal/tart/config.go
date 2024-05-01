@@ -35,7 +35,7 @@ type Config struct {
 	SSHPassword         string `env:"SSH_PASSWORD" envDefault:"admin"`
 	SSHPort             uint16 `env:"SSH_PORT" envDefault:"22"`
 	Bridged             string `env:"BRIDGED"`
-	Softnet             string `env:"SOFTNET"`
+	Softnet             bool   `env:"SOFTNET"`
 	Headless            bool   `env:"HEADLESS"  envDefault:"true"`
 	AlwaysPull          bool   `env:"ALWAYS_PULL"  envDefault:"true"`
 	InsecurePull        bool   `env:"INSECURE_PULL"  envDefault:"false"`
