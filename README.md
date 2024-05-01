@@ -150,7 +150,8 @@ that required paid sponsorship upon exceeding a free limit.
 | `--guest-builds-dir`<sup>1</sup> |         | Path to a directory in guest to use for storing builds, useful when mounting a block device (via [`--disk` command-line argument](#prepare-stage)) to the VM (mutually exclusive with `--builds-dir`) |
 | `--guest-cache-dir`<sup>1</sup>  |         | Path to a directory in guest to use for caching purposes, useful when mounting a block device (via [`--disk` command-line argument](#prepare-stage) to the VM (mutually exclusive with `--cache-dir`) |
 
-<sup>1</sup>: this is an advanced feature which should only be resorted to when the standard directory sharing via `--builds-dir` and `--cache-dir` is not sufficient for some reason.
+<sup>1</sup>: this is an advanced feature which should only be resorted to when the standard directory sharing
+via `--builds-dir` and `--cache-dir` is not sufficient for some reason.
 
 ### `prepare` stage
 
@@ -163,7 +164,8 @@ that required paid sponsorship upon exceeding a free limit.
 | `--disk`        |             | `--disk` arguments to pass to `tart run`, can be specified multiple times                                                                                       |
 | `--auto-prune`  | true        | Whether to enable or disable the Tart's auto-pruning mechanism (sets the `TART_NO_AUTO_PRUNE` environment variable for Tart command invocations under the hood) |
 
-<sup>1</sup>: automatically distributes all host resources according to the concurrency level (for example, VM gets all of the host CPU and RAM assigned when `--concurrency` is 1, and half of that when `--concurrency` is 2)
+<sup>1</sup>: automatically distributes all host resources according to the concurrency level (for example, VM gets all
+of the host CPU and RAM assigned when `--concurrency` is 1, and half of that when `--concurrency` is 2)
 
 ## Supported environment variables
 
@@ -177,6 +179,7 @@ that required paid sponsorship upon exceeding a free limit.
 | `TART_EXECUTOR_INSECURE_PULL`         | false          | Set to `true` to connect the OCI registry via insecure HTTP protocol                                                                                                                                                                                                                                                                                                                                                                     |
 | `TART_EXECUTOR_PULL_CONCURRENCY`      |                | Override the Tart's default network concurrency parameter (`--concurrency`) when pulling remote VMs from the OCI-compatible registries                                                                                                                                                                                                                                                                                                   |
 | `TART_EXECUTOR_SOFTNET`               | false          | Whether to enable [Softnet](https://github.com/cirruslabs/softnet) software networking (`true`) or disable it (`false`)                                                                                                                                                                                                                                                                                                                  |
+| `TART_EXECUTOR_BRIDGED`               |                | Use bridged networking, for example, "en0". Use `tart run --net-bridged=list` to see names of all available interfaces.                                                                                                                                                                                                                                                                                                                  |
 | `TART_EXECUTOR_HOST_DIR`<sup>1</sup>  | false          | Whether to mount a temporary directory from the host for performance reasons (`true`) or use a directory inside of a guest (`false`)                                                                                                                                                                                                                                                                                                     |
 | `TART_EXECUTOR_SHELL`                 | system default | Alternative [Unix shell](https://en.wikipedia.org/wiki/Unix_shell) to use (e.g. `bash -l`)                                                                                                                                                                                                                                                                                                                                               |
 | `TART_EXECUTOR_INSTALL_GITLAB_RUNNER` |                | Set to `brew` to install GitLab Runner [via Homebrew](https://docs.gitlab.com/runner/install/osx.html#homebrew-installation-alternative), `curl` to install the latest version [using cURL](https://docs.gitlab.com/runner/install/osx.html#manual-installation-official) or `major.minor.patch` to install a specific version [using cURL](https://docs.gitlab.com/runner/install/bleeding-edge.html#download-any-other-tagged-release) |

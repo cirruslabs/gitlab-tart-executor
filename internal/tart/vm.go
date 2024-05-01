@@ -111,6 +111,10 @@ func (vm *VM) Start(
 		runArgs = append(runArgs, "--net-softnet")
 	}
 
+	if config.Bridged != "" {
+		runArgs = append(runArgs, "--net-bridged", config.Bridged)
+	}
+
 	if config.Headless {
 		runArgs = append(runArgs, "--no-graphics")
 	}
