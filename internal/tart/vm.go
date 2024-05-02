@@ -194,7 +194,7 @@ func (vm *VM) MonitorTartRunOutput() {
 }
 
 func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
-	ip, err := vm.IP(ctx)
+	ip, err := vm.IP(ctx, config)
 	if err != nil {
 		return nil, err
 	}
@@ -235,8 +235,12 @@ func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
 	return sshClient, nil
 }
 
-func (vm *VM) IP(ctx context.Context) (string, error) {
-	stdout, _, err := TartExec(ctx, "ip", "--wait", "60", vm.id)
+func (vm *VM) IP(ctx context.Context, config Config) (string, error) {
+	resolver := "dhcp"
+	if config.Bridged != "" {
+		resolver = "arp"
+	}
+	stdout, _, err := TartExec(ctx, "ip", "--wait", "60", "--resolver", resolver, vm.id)
 	if err != nil {
 		return "", err
 	}
