@@ -203,7 +203,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 		mountPoint := fmt.Sprintf("/Users/%s/%s", config.SSHUsername, dirToMount)
 		mkdirScript := fmt.Sprintf("mkdir -p %s", mountPoint)
-		mountScript := fmt.Sprintf("mount_virtiofs tart.virtiofs.%s %s", dirToMount, mountPoint)
+		mountScript := fmt.Sprintf("mount_virtiofs tart.virtiofs.%s.%s %s", dirToMount, gitLabEnv.JobID, mountPoint)
 		session.Stdin = bytes.NewBufferString(strings.Join([]string{mkdirScript, mountScript, ""}, "\n"))
 		session.Stdout = os.Stdout
 		session.Stderr = os.Stderr
