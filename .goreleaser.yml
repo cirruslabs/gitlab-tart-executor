@@ -32,7 +32,7 @@ brews:
   - name: gitlab-tart-executor
     ids:
       - regular
-    tap:
+    repository:
       owner: cirruslabs
       name: homebrew-cli
     dependencies:
