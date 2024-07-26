@@ -38,7 +38,7 @@ var memoryOverrideRaw string
 var customDirectoryMounts []string
 var customDiskMounts []string
 var autoPrune bool
-var allowedImages []string
+var allowedImagePatterns []string
 
 func NewCommand() *cobra.Command {
 	command := &cobra.Command{
@@ -60,9 +60,9 @@ func NewCommand() *cobra.Command {
 	command.PersistentFlags().BoolVar(&autoPrune, "auto-prune", true,
 		"Whether to enable or disable the Tart's auto-pruning mechanism (sets the "+
 			"TART_NO_AUTO_PRUNE environment variable for Tart command invocations under the hood)")
-	command.PersistentFlags().StringArrayVar(&allowedImages, "allowed-image", []string{},
+	command.PersistentFlags().StringArrayVar(&allowedImagePatterns, "allow-image", []string{},
 		"only allow running images that match the given doublestar-compatible pattern, "+
-			"can be specified multiple times (e.g. --allowed-image \"ghcr.io/cirruslabs/macos-sonoma-*\")")
+			"can be specified multiple times (e.g. --allow-image \"ghcr.io/cirruslabs/macos-sonoma-*\")")
 
 	return command
 }
@@ -233,12 +233,12 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 }
 
 func ensureImageIsAllowed(image string) error {
-	if len(allowedImages) == 0 {
+	if len(allowedImagePatterns) == 0 {
 		return nil
 	}
 
-	for _, allowedImage := range allowedImages {
-		match, err := doublestar.Match(allowedImage, image)
+	for _, allowedImagePattern := range allowedImagePatterns {
+		match, err := doublestar.Match(allowedImagePattern, image)
 		if err != nil {
 			return err
 		}
