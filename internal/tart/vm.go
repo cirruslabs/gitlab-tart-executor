@@ -43,16 +43,17 @@ func ExistingVM(gitLabEnv gitlab.Env) *VM {
 
 func CreateNewVM(
 	ctx context.Context,
-	gitLabEnv gitlab.Env,
+	name string,
+	image string,
 	config Config,
 	cpuOverride uint64,
 	memoryOverride uint64,
 ) (*VM, error) {
 	vm := &VM{
-		id: gitLabEnv.VirtualMachineID(),
+		id: name,
 	}
 
-	if err := vm.cloneAndConfigure(ctx, gitLabEnv, config, cpuOverride, memoryOverride); err != nil {
+	if err := vm.cloneAndConfigure(ctx, image, config, cpuOverride, memoryOverride); err != nil {
 		return nil, fmt.Errorf("failed to clone the VM: %w", err)
 	}
 
@@ -61,12 +62,12 @@ func CreateNewVM(
 
 func (vm *VM) cloneAndConfigure(
 	ctx context.Context,
-	gitLabEnv gitlab.Env,
+	image string,
 	config Config,
 	cpuOverride uint64,
 	memoryOverride uint64,
 ) error {
-	cloneArgs := []string{"clone", gitLabEnv.JobImage, vm.id}
+	cloneArgs := []string{"clone", image, vm.id}
 
 	if config.InsecurePull {
 		cloneArgs = append(cloneArgs, "--insecure")
