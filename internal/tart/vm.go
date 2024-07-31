@@ -110,6 +110,10 @@ func (vm *VM) Start(
 
 	if config.Softnet {
 		runArgs = append(runArgs, "--net-softnet")
+
+		if config.SoftnetAllow != "" {
+			runArgs = append(runArgs, "--net-softnet-allow", config.SoftnetAllow)
+		}
 	}
 
 	if config.Bridged != "" {
