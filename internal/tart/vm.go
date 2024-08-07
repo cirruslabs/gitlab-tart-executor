@@ -97,6 +97,13 @@ func (vm *VM) cloneAndConfigure(
 		}
 	}
 
+	if config.RandomMAC {
+		_, _, err = TartExec(ctx, "set", "--random-mac", vm.id)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
