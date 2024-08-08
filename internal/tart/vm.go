@@ -207,10 +207,23 @@ func (vm *VM) MonitorTartRunOutput() {
 }
 
 func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
-	ip, err := vm.IP(ctx, config)
-	if err != nil {
+	var ip string
+	var err error
+
+	if err := retry.Do(func() error {
+		ip, err = vm.IP(ctx, config)
+		if err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "Failed to retrieve IP address of VM %q in 60 seconds: %v, "+
+				"will re-try...", vm.id, err)
+
+			return err
+		}
+
+		return nil
+	}, retry.Context(ctx), retry.DelayType(retry.FixedDelay), retry.Delay(time.Second)); err != nil {
 		return nil, err
 	}
+
 	addr := fmt.Sprintf("%s:%d", ip, config.SSHPort)
 
 	sshConfig := &ssh.ClientConfig{
