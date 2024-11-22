@@ -2,6 +2,23 @@
 
 Custom [GitLab Runner](https://docs.gitlab.com/runner/) executor to run jobs inside ephemeral [Tart](https://tart.run/) macOS virtual machines.
 
+> [!IMPORTANT]
+> 
+> **macOS 15 (Sequoia)**
+> 
+> In case you've upgraded and encountering an issue below:
+> 
+> ```
+> Waiting for the VM to boot and be SSH-able...
+> ```
+> 
+> This is likely related to the [newly introduced "Local Network" permission](https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy) on macOS Sequoia and the fact that GitLab Runner's binary might have no `LC_UUID` identifier, which is critical for the local network privacy mechanism.
+> 
+> Make sure you have installed the latest GitLab Runner (`>=17.6.0`) [from Homebrew](https://formulae.brew.sh/formula/gitlab-runner).
+> 
+> Homebrew version [includes a fix for lacking `LC_UUID`](https://github.com/Homebrew/homebrew-core/commit/77fcd447733f6f063ef4f635202d3748fdfb8e26) and it should ask you for a "Local Network" permission correctly when GitLab Tart Executor tries to establish connection with the Tart VMs.
+> 
+
 ## Configuration
 
 ```bash
