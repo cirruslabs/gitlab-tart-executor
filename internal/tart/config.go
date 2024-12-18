@@ -39,6 +39,7 @@ type Config struct {
 	SoftnetAllow        string `env:"SOFTNET_ALLOW"`
 	Headless            bool   `env:"HEADLESS"  envDefault:"true"`
 	RandomMAC           bool   `env:"RANDOM_MAC"  envDefault:"true"`
+	RootDiskOpts        string `env:"ROOT_DISK_OPTS"`
 	AlwaysPull          bool   `env:"ALWAYS_PULL"  envDefault:"true"`
 	InsecurePull        bool   `env:"INSECURE_PULL"  envDefault:"false"`
 	PullConcurrency     uint8  `env:"PULL_CONCURRENCY"`

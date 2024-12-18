@@ -123,6 +123,10 @@ func (vm *VM) Start(
 		}
 	}
 
+	if config.RootDiskOpts != "" {
+		runArgs = append(runArgs, "--root-disk-opts", config.RootDiskOpts)
+	}
+
 	if config.Bridged != "" {
 		runArgs = append(runArgs, "--net-bridged", config.Bridged)
 	}
