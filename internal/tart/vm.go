@@ -3,6 +3,7 @@ package tart
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -33,6 +34,10 @@ var (
 
 type VM struct {
 	id string
+}
+
+type VMInfo struct {
+	OS string `json:"os"`
 }
 
 func ExistingVM(gitLabEnv gitlab.Env) *VM {
@@ -276,6 +281,21 @@ func (vm *VM) IP(ctx context.Context, config Config) (string, error) {
 	}
 
 	return strings.TrimSpace(stdout), nil
+}
+
+func (vm *VM) Info(ctx context.Context) (*VMInfo, error) {
+	stdout, _, err := TartExec(ctx, "get", "--format", "json", vm.id)
+	if err != nil {
+		return nil, err
+	}
+
+	var vmInfo VMInfo
+
+	if err := json.Unmarshal([]byte(stdout), &vmInfo); err != nil {
+		return nil, err
+	}
+
+	return &vmInfo, nil
 }
 
 func (vm *VM) Stop() error {
