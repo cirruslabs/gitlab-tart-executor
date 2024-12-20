@@ -53,7 +53,10 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		// to be absolute[1].
 		//
 		// 2. GitLab Runner uses relative paths internally which results in improper directory traversal[2],
-		// this is why we use "/private/tmp" instead of just "/tmp" here as a workaround.
+		// so instead of "/tmp" we need to use "/private/tmp" here as a workaround.
+		//
+		// 3. However, there's no "/private/tmp" on Linux. So we use the lowest common denominator
+		// in the form of "/var/tmp". It's both (1) not a symbolic link and (2) is present on both platforms.
 		//
 		// [1]: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-runners-section
 		// [2]: https://gitlab.com/gitlab-org/gitlab-runner/-/issues/31003
