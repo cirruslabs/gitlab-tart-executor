@@ -24,10 +24,20 @@ const (
 	// by the user.
 	EnvTartExecutorInternalBuildsDir = "TART_EXECUTOR_INTERNAL_BUILDS_DIR"
 
+	// EnvTartExecutorInternalBuildsDirOnHost is an internal environment variable
+	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
+	// by the user.
+	EnvTartExecutorInternalBuildsDirOnHost = "TART_EXECUTOR_INTERNAL_BUILDS_DIR_ON_HOST"
+
 	// EnvTartExecutorInternalCacheDir is an internal environment variable
 	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
 	// by the user.
 	EnvTartExecutorInternalCacheDir = "TART_EXECUTOR_INTERNAL_CACHE_DIR"
+
+	// EnvTartExecutorInternalCacheDirOnHost is an internal environment variable
+	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
+	// by the user.
+	EnvTartExecutorInternalCacheDirOnHost = "TART_EXECUTOR_INTERNAL_CACHE_DIR_ON_HOST"
 )
 
 type Config struct {

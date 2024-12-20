@@ -53,12 +53,15 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		// to be absolute[1].
 		//
 		// 2. GitLab Runner uses relative paths internally which results in improper directory traversal[2],
-		// this is why we use "/private/tmp" instead of just "/tmp" here as a workaround.
+		// so instead of "/tmp" we need to use "/private/tmp" here as a workaround.
+		//
+		// 3. However, there's no "/private/tmp" on Linux. So we use the lowest common denominator
+		// in the form of "/var/tmp". It's both (1) not a symbolic link and (2) is present on both platforms.
 		//
 		// [1]: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-runners-section
 		// [2]: https://gitlab.com/gitlab-org/gitlab-runner/-/issues/31003
-		BuildsDir: "/private/tmp/builds",
-		CacheDir:  "/private/tmp/cache",
+		BuildsDir: "/var/tmp/builds",
+		CacheDir:  "/var/tmp/cache",
 		JobEnv:    map[string]string{},
 	}
 
@@ -95,15 +98,14 @@ func runConfig(cmd *cobra.Command, args []string) error {
 	// Figure out the builds directory override to use
 	switch {
 	case tartConfig.HostDir:
-		gitlabRunnerConfig.BuildsDir = fmt.Sprintf("/Users/%s/hostdir", tartConfig.SSHUsername)
+		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalBuildsDirOnHost] = gitLabEnv.HostDirPath()
 
 		if err := os.MkdirAll(gitLabEnv.HostDirPath(), 0700); err != nil {
 			return err
 		}
 	case buildsDir != "":
-		gitlabRunnerConfig.BuildsDir = fmt.Sprintf("/Users/%s/buildsdir", tartConfig.SSHUsername)
 		buildsDir = os.ExpandEnv(buildsDir)
-		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalBuildsDir] = buildsDir
+		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalBuildsDirOnHost] = buildsDir
 
 		if err := os.MkdirAll(buildsDir, 0700); err != nil {
 			return err
@@ -115,9 +117,8 @@ func runConfig(cmd *cobra.Command, args []string) error {
 	// Figure out the cache directory override to use
 	switch {
 	case cacheDir != "":
-		gitlabRunnerConfig.CacheDir = fmt.Sprintf("/Users/%s/cachedir", tartConfig.SSHUsername)
 		cacheDir = os.ExpandEnv(cacheDir)
-		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalCacheDir] = cacheDir
+		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalCacheDirOnHost] = cacheDir
 
 		if err := os.MkdirAll(cacheDir, 0700); err != nil {
 			return err
@@ -125,6 +126,11 @@ func runConfig(cmd *cobra.Command, args []string) error {
 	case guestCacheDir != "":
 		gitlabRunnerConfig.CacheDir = guestCacheDir
 	}
+
+	// Propagate builds and cache directory locations in the guest
+	// because GitLab Runner won't do this for us
+	gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalBuildsDir] = gitlabRunnerConfig.BuildsDir
+	gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalCacheDir] = gitlabRunnerConfig.CacheDir
 
 	jsonBytes, err := json.MarshalIndent(&gitlabRunnerConfig, "", "  ")
 	if err != nil {

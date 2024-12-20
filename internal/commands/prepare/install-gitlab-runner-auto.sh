@@ -10,7 +10,18 @@
 #
 set -euo pipefail
 
-GITLAB_RUNNER_URL="https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-darwin-arm64"
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+case $ARCH in
+  aarch64)
+      ARCH="arm64"
+      ;;
+  x86_64)
+      ARCH="amd64"
+      ;;
+esac
+
+GITLAB_RUNNER_URL="https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-${OS}-${ARCH}"
 GITLAB_RUNNER_PATH="/usr/local/bin/gitlab-runner"
 
 # Is GitLab Runner already installed?

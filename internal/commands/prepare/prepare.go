@@ -191,19 +191,33 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		log.Printf("Timezone was set to %s!\n", tz)
 	}
 
-	dirsToMount := []string{}
-	if config.HostDir {
-		dirsToMount = append(dirsToMount, "hostdir")
-	}
-	if _, ok := os.LookupEnv(tart.EnvTartExecutorInternalBuildsDir); ok {
-		dirsToMount = append(dirsToMount, "buildsdir")
-	}
-	if _, ok := os.LookupEnv(tart.EnvTartExecutorInternalCacheDir); ok {
-		dirsToMount = append(dirsToMount, "cachedir")
+	type MountPoint struct {
+		Name string
+		Path string
 	}
 
-	for _, dirToMount := range dirsToMount {
-		log.Printf("Mounting %s...\n", dirToMount)
+	vmInfo, err := vm.Info(cmd.Context())
+	if err != nil {
+		return err
+	}
+
+	var mountPoints []MountPoint
+
+	if _, ok := os.LookupEnv(tart.EnvTartExecutorInternalBuildsDirOnHost); ok {
+		mountPoints = append(mountPoints, MountPoint{
+			Name: "buildsdir",
+			Path: os.Getenv(tart.EnvTartExecutorInternalBuildsDir),
+		})
+	}
+	if _, ok := os.LookupEnv(tart.EnvTartExecutorInternalCacheDirOnHost); ok {
+		mountPoints = append(mountPoints, MountPoint{
+			Name: "cachedir",
+			Path: os.Getenv(tart.EnvTartExecutorInternalCacheDir),
+		})
+	}
+
+	for _, mountPoint := range mountPoints {
+		log.Printf("Mounting %s on %s...\n", mountPoint.Name, mountPoint.Path)
 
 		session, err := ssh.NewSession()
 		if err != nil {
@@ -211,9 +225,17 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		}
 		defer session.Close()
 
-		mountPoint := fmt.Sprintf("/Users/%s/%s", config.SSHUsername, dirToMount)
-		mkdirScript := fmt.Sprintf("mkdir -p %s", mountPoint)
-		mountScript := fmt.Sprintf("mount_virtiofs tart.virtiofs.%s.%s %s", dirToMount, gitLabEnv.JobID, mountPoint)
+		var command string
+
+		if vmInfo.OS == "darwin" {
+			command = "mount_virtiofs"
+		} else {
+			command = "sudo mount -t virtiofs"
+		}
+
+		mkdirScript := fmt.Sprintf("mkdir -p %s", mountPoint.Path)
+		mountScript := fmt.Sprintf("%s tart.virtiofs.%s.%s %s", command, mountPoint.Name,
+			gitLabEnv.JobID, mountPoint.Path)
 		session.Stdin = bytes.NewBufferString(strings.Join([]string{mkdirScript, mountScript, ""}, "\n"))
 		session.Stdout = os.Stdout
 		session.Stderr = os.Stderr
