@@ -148,15 +148,14 @@ func (vm *VM) Start(
 		runArgs = append(runArgs, "--disk", customDiskMount)
 	}
 
-	if config.HostDir {
-		hostDir := gitLabEnv.HostDirPath()
-		runArgs = append(runArgs, "--dir", fmt.Sprintf("%s:tag=tart.virtiofs.hostdir.%s", hostDir, gitLabEnv.JobID))
-	} else if buildsDir, ok := os.LookupEnv(EnvTartExecutorInternalBuildsDir); ok {
-		runArgs = append(runArgs, "--dir", fmt.Sprintf("%s:tag=tart.virtiofs.buildsdir.%s", buildsDir, gitLabEnv.JobID))
+	if buildsDir, ok := os.LookupEnv(EnvTartExecutorInternalBuildsDirOnHost); ok {
+		runArgs = append(runArgs, "--dir", fmt.Sprintf("%s:tag=tart.virtiofs.buildsdir.%s",
+			buildsDir, gitLabEnv.JobID))
 	}
 
-	if cacheDir, ok := os.LookupEnv(EnvTartExecutorInternalCacheDir); ok {
-		runArgs = append(runArgs, "--dir", fmt.Sprintf("%s:tag=tart.virtiofs.cachedir.%s", cacheDir, gitLabEnv.JobID))
+	if cacheDir, ok := os.LookupEnv(EnvTartExecutorInternalCacheDirOnHost); ok {
+		runArgs = append(runArgs, "--dir", fmt.Sprintf("%s:tag=tart.virtiofs.cachedir.%s",
+			cacheDir, gitLabEnv.JobID))
 	}
 
 	runArgs = append(runArgs, vm.id)
