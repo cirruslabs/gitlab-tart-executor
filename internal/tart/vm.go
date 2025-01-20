@@ -144,6 +144,10 @@ func (vm *VM) Start(
 		runArgs = append(runArgs, "--no-graphics")
 	}
 
+	if config.Nested {
+		runArgs = append(runArgs, "--nested")
+	}
+
 	for _, customDirectoryMount := range customDirectoryMounts {
 		runArgs = append(runArgs, "--dir", customDirectoryMount)
 	}
