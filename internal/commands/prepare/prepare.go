@@ -140,6 +140,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	defer ssh.Close()
 
 	log.Println("Was able to SSH!")
 
@@ -251,7 +252,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 	log.Println("VM is ready.")
 
-	return ssh.Close()
+	return nil
 }
 
 func ensureImageIsAllowed(image string) error {
