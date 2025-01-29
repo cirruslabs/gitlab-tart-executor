@@ -59,7 +59,8 @@ func CreateNewVM(
 		id: name,
 	}
 
-	if err := vm.cloneAndConfigure(ctx, image, config, cpuOverride, memoryOverride, additionalCloneAndPullEnv); err != nil {
+	if err := vm.cloneAndConfigure(ctx, image, config, cpuOverride, memoryOverride,
+		additionalCloneAndPullEnv); err != nil {
 		return nil, fmt.Errorf("failed to clone the VM: %w", err)
 	}
 
