@@ -101,6 +101,8 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	additionalCloneAndPullEnv := additionalPullEnv(gitLabEnv.Registry)
+
 	if config.AlwaysPull {
 		log.Printf("Pulling the latest version of %s...\n", gitLabEnv.JobImage)
 
@@ -115,7 +117,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 				strconv.FormatUint(uint64(config.PullConcurrency), 10))
 		}
 
-		_, _, err := tart.TartExecWithEnv(cmd.Context(), additionalPullEnv(gitLabEnv.Registry), pullArgs...)
+		_, _, err := tart.TartExecWithEnv(cmd.Context(), additionalCloneAndPullEnv, pullArgs...)
 		if err != nil {
 			return err
 		}
@@ -123,7 +125,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 	log.Println("Cloning and configuring a new VM...")
 	vm, err := tart.CreateNewVM(cmd.Context(), gitLabEnv.VirtualMachineID(), gitLabEnv.JobImage,
-		config, cpuOverride, memoryOverride)
+		config, cpuOverride, memoryOverride, additionalCloneAndPullEnv)
 	if err != nil {
 		return err
 	}
