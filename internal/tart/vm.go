@@ -53,12 +53,14 @@ func CreateNewVM(
 	config Config,
 	cpuOverride uint64,
 	memoryOverride uint64,
+	additionalCloneAndPullEnv map[string]string,
 ) (*VM, error) {
 	vm := &VM{
 		id: name,
 	}
 
-	if err := vm.cloneAndConfigure(ctx, image, config, cpuOverride, memoryOverride); err != nil {
+	if err := vm.cloneAndConfigure(ctx, image, config, cpuOverride, memoryOverride,
+		additionalCloneAndPullEnv); err != nil {
 		return nil, fmt.Errorf("failed to clone the VM: %w", err)
 	}
 
@@ -71,6 +73,7 @@ func (vm *VM) cloneAndConfigure(
 	config Config,
 	cpuOverride uint64,
 	memoryOverride uint64,
+	additionalCloneAndPullEnv map[string]string,
 ) error {
 	cloneArgs := []string{"clone", image, vm.id}
 
@@ -83,7 +86,7 @@ func (vm *VM) cloneAndConfigure(
 			strconv.FormatUint(uint64(config.PullConcurrency), 10))
 	}
 
-	_, _, err := TartExec(ctx, cloneArgs...)
+	_, _, err := TartExecWithEnv(ctx, additionalCloneAndPullEnv, cloneArgs...)
 	if err != nil {
 		return err
 	}
