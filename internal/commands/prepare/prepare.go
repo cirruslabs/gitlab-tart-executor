@@ -102,7 +102,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		}
 
 		gitLabEnv.JobImage = defaultImage
-		log.Println("No image provided, falling back to default: %s", defaultImage)
+		log.Printf("No image provided, falling back to default: %s\n", defaultImage)
 	}
 
 	if err := ensureImageIsAllowed(gitLabEnv.JobImage); err != nil {
