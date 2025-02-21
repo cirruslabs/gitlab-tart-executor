@@ -41,7 +41,10 @@ func InitEnv() (*Env, error) {
 	result.JobID = jobID
 	jobImage, ok := os.LookupEnv("CUSTOM_ENV_CI_JOB_IMAGE")
 	if !ok {
-		return nil, fmt.Errorf("%w: CUSTOM_ENV_CI_JOB_IMAGE is missing", ErrGitLabEnv)
+		jobImage, ok = os.LookupEnv("CUSTOM_ENV_CI_DEFAULT_JOB_IMAGE")
+		if !ok {
+			return nil, fmt.Errorf("%w: CUSTOM_ENV_CI_JOB_IMAGE and CUSTOM_ENV_CI_DEFAULT_JOB_IMAGE are missing", ErrGitLabEnv)
+		}
 	}
 
 	result.JobImage = jobImage
