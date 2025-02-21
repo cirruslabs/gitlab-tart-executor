@@ -39,7 +39,7 @@ func InitEnv() (*Env, error) {
 	}
 
 	result.JobID = jobID
-	jobImage := os.LookupEnv("CUSTOM_ENV_CI_JOB_IMAGE")
+	jobImage := os.Getenv("CUSTOM_ENV_CI_JOB_IMAGE")
 
 	result.JobImage = jobImage
 	failureExitCodeRaw := os.Getenv("BUILD_FAILURE_EXIT_CODE")
