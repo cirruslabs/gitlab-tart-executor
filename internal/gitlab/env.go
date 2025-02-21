@@ -39,10 +39,7 @@ func InitEnv() (*Env, error) {
 	}
 
 	result.JobID = jobID
-	jobImage, ok := os.LookupEnv("CUSTOM_ENV_CI_JOB_IMAGE")
-	if !ok {
-		fmt.Sprintf("%w: CUSTOM_ENV_CI_JOB_IMAGE is missing", ErrGitLabEnv)
-	}
+	jobImage := os.LookupEnv("CUSTOM_ENV_CI_JOB_IMAGE")
 
 	result.JobImage = jobImage
 	failureExitCodeRaw := os.Getenv("BUILD_FAILURE_EXIT_CODE")

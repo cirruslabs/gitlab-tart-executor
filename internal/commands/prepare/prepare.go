@@ -97,8 +97,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 	if gitLabEnv.JobImage == "" {
 		if defaultImage == "" {
-			fmt.Errorf("%w: CUSTOM_ENV_CI_JOB_ID is missing and no default image was provided", ErrFailed)
-			return nil
+			return fmt.Errorf("%w: CUSTOM_ENV_CI_JOB_ID is missing and no default image was provided", ErrFailed)
 		}
 
 		gitLabEnv.JobImage = defaultImage

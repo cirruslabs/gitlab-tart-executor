@@ -3,20 +3,21 @@
 Custom [GitLab Runner](https://docs.gitlab.com/runner/) executor to run jobs inside ephemeral [Tart](https://tart.run/) macOS virtual machines.
 
 > [!IMPORTANT]
->
+> 
 > **macOS 15 (Sequoia)**
->
+> 
 > In case you've upgraded and encountering an issue below:
->
+> 
 > ```
 > Waiting for the VM to boot and be SSH-able...
 > ```
->
+> 
 > This is likely related to the [newly introduced "Local Network" permission](https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy) on macOS Sequoia and the fact that GitLab Runner's binary might have no `LC_UUID` identifier, which is critical for the local network privacy mechanism.
->
+> 
 > Make sure you have installed the latest GitLab Runner (`>=17.6.0`) [from Homebrew](https://formulae.brew.sh/formula/gitlab-runner).
->
+> 
 > Homebrew version [includes a fix for lacking `LC_UUID`](https://github.com/Homebrew/homebrew-core/commit/77fcd447733f6f063ef4f635202d3748fdfb8e26) and it should ask you for a "Local Network" permission correctly when GitLab Tart Executor tries to establish connection with the Tart VMs.
+> 
 
 ## Configuration
 
@@ -160,7 +161,7 @@ that required paid sponsorship upon exceeding a free limit.
 ### `config` stage
 
 | Argument                         | Default | Description                                                                                                                                                                                           |
-| -------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|----------------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--builds-dir`                   |         | Path to a directory on host to use for storing builds, automatically mounts that directory to the guest VM (mutually exclusive with `--guest-builds-dir`)                                             |
 | `--cache-dir`                    |         | Path to a directory on host to use for caching purposes, automatically mounts that directory to the guest VM (mutually exclusive with `--guest-cache-dir`)                                            |
 | `--guest-builds-dir`<sup>1</sup> |         | Path to a directory in guest to use for storing builds, useful when mounting a block device (via [`--disk` command-line argument](#prepare-stage)) to the VM (mutually exclusive with `--builds-dir`) |
@@ -171,7 +172,7 @@ that required paid sponsorship upon exceeding a free limit.
 ### `prepare` stage
 
 | Argument          | Default     | Description                                                                                                                                                     |
-| ----------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|-------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--concurrency`   | 1           | Maximum number of concurrently running Tart VMs to calculate the `auto` resources                                                                               |
 | `--cpu`           | no override | Override default image CPU configuration (number of CPUs or `auto`<sup>1</sup>)                                                                                 |
 | `--memory`        | no override | Override default image memory configuration (size in megabytes or `auto`<sup>1</sup>)                                                                           |
@@ -186,7 +187,7 @@ that required paid sponsorship upon exceeding a free limit.
 ## Supported environment variables
 
 | Name                                  | Default        | Description                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| ------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|---------------------------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `TART_EXECUTOR_ALWAYS_PULL`           | true           | Always pull the latest version of the Tart image (`true`) or only when the image doesn't exist locally (`false`)                                                                                                                                                                                                                                                                                                                         |
 | `TART_EXECUTOR_BRIDGED`               |                | Use bridged networking, for example, "en0". Use `tart run --net-bridged=list` to see names of all available interfaces.                                                                                                                                                                                                                                                                                                                  |
 | `TART_EXECUTOR_HEADLESS`              | true           | Run the VM in headless mode (`true`) or with GUI (`false`)                                                                                                                                                                                                                                                                                                                                                                               |
