@@ -57,6 +57,7 @@ type Config struct {
 	Shell               string `env:"SHELL"`
 	InstallGitlabRunner string `env:"INSTALL_GITLAB_RUNNER"`
 	Timezone            string `env:"TIMEZONE"`
+	KeychainUnlock      bool   `env:"KEYCHAIN_UNLOCK"  envDefault:"false"`
 }
 
 func NewConfigFromEnvironment() (Config, error) {
