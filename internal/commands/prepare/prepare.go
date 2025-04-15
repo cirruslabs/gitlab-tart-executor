@@ -39,6 +39,7 @@ var customDirectoryMounts []string
 var customDiskMounts []string
 var autoPrune bool
 var allowedImagePatterns []string
+var defaultImage string
 
 func NewCommand() *cobra.Command {
 	command := &cobra.Command{
@@ -63,6 +64,8 @@ func NewCommand() *cobra.Command {
 	command.PersistentFlags().StringArrayVar(&allowedImagePatterns, "allow-image", []string{},
 		"only allow running images that match the given doublestar-compatible pattern, "+
 			"can be specified multiple times (e.g. --allow-image \"ghcr.io/cirruslabs/macos-sonoma-*\")")
+	command.PersistentFlags().StringVar(&defaultImage, "default-image", "",
+		"A fallback Tart image to use, in case the job does not specify one")
 
 	return command
 }
@@ -90,6 +93,15 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	gitLabEnv, err := gitlab.InitEnv()
 	if err != nil {
 		return err
+	}
+
+	if gitLabEnv.JobImage == "" {
+		if defaultImage == "" {
+			return fmt.Errorf("%w: CUSTOM_ENV_CI_JOB_ID is missing and no --default-image was set", ErrFailed)
+		}
+
+		gitLabEnv.JobImage = defaultImage
+		log.Printf("No image provided, falling back to default: %s\n", defaultImage)
 	}
 
 	if err := ensureImageIsAllowed(gitLabEnv.JobImage); err != nil {
