@@ -1,18 +1,26 @@
-run:
-  timeout: 5m
-
-linters-settings:
-  # Even in Rust you can get away with partial matching,
-  # so make sure that the linter respects the programmer's
-  # intent expressed in the form of "default" case.
-  exhaustive:
-    default-signifies-exhaustive: true
-
-  gosec:
-    excludes:
-      - G115
+version: "2"
 
 linters:
+  settings:
+    # Even in Rust you can get away with partial matching,
+    # so make sure that the linter respects the programmer's
+    # intent expressed in the form of "default" case.
+    exhaustive:
+      default-signifies-exhaustive: true
+    gosec:
+      excludes:
+        - G115
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
   enable:
     - asciicheck
     - bodyclose
@@ -26,12 +34,10 @@ linters:
     - gocyclo
     - godot
     - godox
-    - gofmt
     - goheader
     - gomodguard
     - goprintffuncname
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - lll
@@ -45,10 +51,8 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
-    - stylecheck
     - testpackage
     - tparallel
-    - typecheck
     - unconvert
     - unparam
     - unused
@@ -70,8 +74,6 @@ linters:
 
     # Style linters that are total nuts.
     - wsl
-    - gofumpt
-    - goimports
     - funlen
 
     # Enough parallelism for now.
@@ -103,3 +105,15 @@ issues:
   # Don't hide multiple issues that belong to one class since GitHub annotations can handle them all nicely.
   max-issues-per-linter: 0
   max-same-issues: 0
+
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
