@@ -67,6 +67,7 @@ func CreateNewVM(
 	return vm, nil
 }
 
+//nolint:funcorder // let's fix this later
 func (vm *VM) cloneAndConfigure(
 	ctx context.Context,
 	image string,
@@ -168,6 +169,7 @@ func (vm *VM) Start(
 		return err
 	}
 
+	//nolint:gosec // it's OK to launch a subrocess with variable
 	cmd := exec.Command(tartCommandPath, runArgs...)
 
 	outputFile, err := os.OpenFile(vm.tartRunOutputPath(), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
@@ -332,6 +334,7 @@ func TartExecWithEnv(
 		return "", "", err
 	}
 
+	//nolint:gosec // it's OK to launch a subrocess with variable
 	cmd := exec.CommandContext(ctx, tartCommandPath, args...)
 
 	// Base environment

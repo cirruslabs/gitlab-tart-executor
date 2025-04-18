@@ -1,59 +1,15 @@
+version: 2
+
 run:
   timeout: 5m
 
 linters-settings:
-  # Even in Rust you can get away with partial matching,
-  # so make sure that the linter respects the programmer's
-  # intent expressed in the form of "default" case.
-  exhaustive:
-    default-signifies-exhaustive: true
-
   gosec:
     excludes:
       - G115
 
 linters:
-  enable:
-    - asciicheck
-    - bodyclose
-    - dupl
-    - errcheck
-    - exhaustive
-    - gochecknoinits
-    - gocognit
-    - goconst
-    - gocritic
-    - gocyclo
-    - godot
-    - godox
-    - gofmt
-    - goheader
-    - gomodguard
-    - goprintffuncname
-    - gosec
-    - gosimple
-    - govet
-    - ineffassign
-    - lll
-    - makezero
-    - misspell
-    - nakedret
-    - nestif
-    - noctx
-    - nolintlint
-    - predeclared
-    - rowserrcheck
-    - sqlclosecheck
-    - staticcheck
-    - stylecheck
-    - testpackage
-    - tparallel
-    - typecheck
-    - unconvert
-    - unparam
-    - unused
-    - unused
-    - whitespace
+  default: all
 
   disable:
     # We don't have high-performance requirements at this moment, so sacrificing
@@ -70,9 +26,9 @@ linters:
 
     # Style linters that are total nuts.
     - wsl
-    - gofumpt
-    - goimports
     - funlen
+    - tagliatelle
+    - tagalign
 
     # Enough parallelism for now.
     - paralleltest
@@ -98,6 +54,28 @@ linters:
     # Needs package whitelists
     - depguard
 
+    # We don't care about some of the errors
+    - errcheck
+
+    # It's OK to have "magic" numbers in things like time.Sleep()
+    - mnd
+
+    # fmt.Sprintf() looks nicer than string concatenation
+    - perfsprint
+
+    # It's OK to have variables like vm, ip, n, etc.
+    - varnamelen
+
+    # It's OK to have dynamic errors since we're not a library
+    - err113
+
+    # Some functions are complex indeed
+    - maintidx
+
+    # Even in Rust you can get away with partial matching,
+    # so make sure that the linter respects the programmer's
+    # intent expressed in the form of "default" case.
+    - exhaustruct
 
 issues:
   # Don't hide multiple issues that belong to one class since GitHub annotations can handle them all nicely.
