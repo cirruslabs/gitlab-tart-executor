@@ -331,6 +331,7 @@ func parseCPUOverride(ctx context.Context, override string) (uint64, error) {
 			return 0, err
 		}
 
+		//nolint:gosec // there's no overflow since cpu.CountsWithContext() returns positive values
 		return uint64(count) / concurrency, nil
 	}
 
