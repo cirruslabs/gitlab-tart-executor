@@ -6,8 +6,14 @@ import (
 	"fmt"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
+	"github.com/cirruslabs/gitlab-tart-executor/internal/version"
 	"github.com/spf13/cobra"
 	"os"
+)
+
+const (
+	driverName    = "name"
+	driverVersion = "version"
 )
 
 var ErrConfigFailed = errors.New("configuration stage failed")
@@ -44,10 +50,15 @@ func NewCommand() *cobra.Command {
 }
 
 func runConfig(cmd *cobra.Command, args []string) error {
+	gitlabRunnerDriver := map[string]string{
+		driverName:    tart.TartCommandName,
+		driverVersion: version.FullVersion,
+	}
 	gitlabRunnerConfig := struct {
 		BuildsDir string            `json:"builds_dir"`
 		CacheDir  string            `json:"cache_dir"`
 		JobEnv    map[string]string `json:"job_env,omitempty"`
+		Driver    map[string]string `json:"driver,omitempty"`
 	}{
 		// 1. GitLab Runner's documentation requires the builds and cache directory paths
 		// to be absolute[1].
@@ -62,6 +73,7 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		// [2]: https://gitlab.com/gitlab-org/gitlab-runner/-/issues/31003
 		BuildsDir: "/var/tmp/builds",
 		CacheDir:  "/var/tmp/cache",
+		Driver:    gitlabRunnerDriver,
 		JobEnv:    map[string]string{},
 	}
 

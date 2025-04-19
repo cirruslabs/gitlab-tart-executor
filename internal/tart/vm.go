@@ -22,8 +22,8 @@ import (
 )
 
 const (
-	tartCommandName         = "tart"
-	tartCommandHomebrewPath = "/opt/homebrew/bin/tart"
+	TartCommandName         = "tart"
+	TartCommandHomebrewPath = "/opt/homebrew/bin/tart"
 )
 
 var (
@@ -388,20 +388,20 @@ func (vm *VM) tartRunOutputPath() string {
 }
 
 func tartCommandPath() (string, error) {
-	result, err := exec.LookPath(tartCommandName)
+	result, err := exec.LookPath(TartCommandName)
 	if err != nil {
 		// Perhaps GitLab Runner was invoked from a launchd user agent
 		// with a limited PATH[1], check if Tart is available in the
 		// Homebrew's binary directory before completely failing.
 		//
 		// [1]: https://github.com/cirruslabs/gitlab-tart-executor/issues/47
-		_, err := os.Stat(tartCommandHomebrewPath)
+		_, err := os.Stat(TartCommandHomebrewPath)
 		if err == nil {
-			return tartCommandHomebrewPath, nil
+			return TartCommandHomebrewPath, nil
 		}
 
 		return "", fmt.Errorf("%w: %s command not found in PATH, make sure Tart is installed",
-			ErrTartNotFound, tartCommandName)
+			ErrTartNotFound, TartCommandName)
 	}
 
 	return result, nil
