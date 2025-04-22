@@ -121,6 +121,7 @@ func (vm *VM) Start(
 	gitLabEnv *gitlab.Env,
 	customDirectoryMounts []string,
 	customDiskMounts []string,
+	nested bool,
 ) error {
 	var runArgs = []string{"run"}
 
@@ -144,7 +145,7 @@ func (vm *VM) Start(
 		runArgs = append(runArgs, "--no-graphics")
 	}
 
-	if config.Nested {
+	if nested {
 		runArgs = append(runArgs, "--nested")
 	}
 

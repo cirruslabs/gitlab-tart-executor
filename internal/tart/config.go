@@ -48,7 +48,6 @@ type Config struct {
 	Softnet             bool   `env:"SOFTNET"`
 	SoftnetAllow        string `env:"SOFTNET_ALLOW"`
 	Headless            bool   `env:"HEADLESS"  envDefault:"true"`
-	Nested              bool   `env:"NESTED"  envDefault:"false"`
 	RandomMAC           bool   `env:"RANDOM_MAC"  envDefault:"true"`
 	RootDiskOpts        string `env:"ROOT_DISK_OPTS"`
 	AlwaysPull          bool   `env:"ALWAYS_PULL"  envDefault:"true"`
