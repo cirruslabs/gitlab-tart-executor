@@ -40,6 +40,7 @@ var customDiskMounts []string
 var autoPrune bool
 var allowedImagePatterns []string
 var defaultImage string
+var nested bool
 
 func NewCommand() *cobra.Command {
 	command := &cobra.Command{
@@ -66,6 +67,8 @@ func NewCommand() *cobra.Command {
 			"can be specified multiple times (e.g. --allow-image \"ghcr.io/cirruslabs/macos-sonoma-*\")")
 	command.PersistentFlags().StringVar(&defaultImage, "default-image", "",
 		"A fallback Tart image to use, in case the job does not specify one")
+	command.PersistentFlags().BoolVar(&nested, "nested", false,
+		"Run the VM with nested virtualization enabled")
 
 	return command
 }
@@ -141,7 +144,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	err = vm.Start(config, gitLabEnv, customDirectoryMounts, customDiskMounts)
+	err = vm.Start(config, gitLabEnv, customDirectoryMounts, customDiskMounts, nested)
 	if err != nil {
 		return err
 	}

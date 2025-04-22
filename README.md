@@ -180,6 +180,7 @@ that required paid sponsorship upon exceeding a free limit.
 | `--auto-prune`    | true        | Whether to enable or disable the Tart's auto-pruning mechanism (sets the `TART_NO_AUTO_PRUNE` environment variable for Tart command invocations under the hood) |
 | `--allow-image`   |             | only allow running images that match the given [doublestar](https://github.com/bmatcuk/doublestar)-compatible pattern, can be specified multiple times          |
 | `--default-image` |             | A fallback Tart image to use, in case the job does not specify one                                                                                              |
+| `--nested`        | false       | Run VMs with [nested virtualization](https://tart.run/faq/#nested-virtualization-support) enabled                                                            |
 
 <sup>1</sup>: automatically distributes all host resources according to the concurrency level (for example, VM gets all of the host CPU and RAM assigned when `--concurrency` is 1, and half of that when `--concurrency` is 2)
 
