@@ -34,7 +34,7 @@ func runScriptInsideVM(cmd *cobra.Command, args []string) error {
 	// Monitor "tart run" command's output so it's not silenced
 	go vm.MonitorTartRunOutput()
 
-	config, err := tart.NewConfigFromEnvironment()
+	config, err := tart.NewConfigFromEnvironment(gitlab.EnvPrefixGitLabRunner)
 	if err != nil {
 		return err
 	}

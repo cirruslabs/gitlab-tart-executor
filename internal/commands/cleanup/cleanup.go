@@ -36,7 +36,7 @@ func cleanupVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	tartConfig, err := tart.NewConfigFromEnvironment()
+	tartConfig, err := tart.NewConfigFromEnvironment(gitlab.EnvPrefixGitLabRunner)
 	if err != nil {
 		return err
 	}

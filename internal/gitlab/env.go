@@ -6,6 +6,16 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
+)
+
+const (
+	// EnvPrefixGitLabRunner is the environment variable prefix
+	// GitLab CI/CD adds [1] to prevent conflicts with system
+	// environment variables.
+	//
+	// [1]: https://docs.gitlab.com/runner/executors/custom.html#stages
+	EnvPrefixGitLabRunner = "CUSTOM_ENV_"
 )
 
 var ErrGitLabEnv = errors.New("GitLab environment error")
@@ -64,4 +74,21 @@ func InitEnv() (*Env, error) {
 	}
 
 	return result, nil
+}
+
+// CustomExecutorEnvironment parses the provided
+// environment variables for values intended for the custom
+// executor based on their prefix. The resulting list items
+// have their prefix stripped.
+func CustomExecutorEnvironment(env []string) []string {
+	vars := make([]string, 0, len(env))
+
+	for _, e := range env {
+		pair := strings.TrimPrefix(e, EnvPrefixGitLabRunner)
+		if pair != "" && pair[0] != '=' && pair != e {
+			vars = append(vars, pair)
+		}
+	}
+
+	return vars
 }

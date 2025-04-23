@@ -77,7 +77,7 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		JobEnv:    map[string]string{},
 	}
 
-	tartConfig, err := tart.NewConfigFromEnvironment()
+	tartConfig, err := tart.NewConfigFromEnvironment(gitlab.EnvPrefixGitLabRunner)
 	if err != nil {
 		return err
 	}

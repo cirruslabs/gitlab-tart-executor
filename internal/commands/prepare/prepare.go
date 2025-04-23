@@ -15,22 +15,18 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/spf13/cobra"
+	"io"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	"text/template"
 )
 
 var ErrFailed = errors.New("\"prepare\" stage failed")
 
-//go:embed install-gitlab-runner-auto.sh
-var installGitlabRunnerScriptAuto string
-
-//go:embed install-gitlab-runner-brew.sh
-var installGitlabRunnerBrewScript string
-
-//go:embed install-gitlab-runner-curl.sh
-var installGitlabRunnerCurlScript string
+//go:embed install-gitlab-runner.sh.tpl
+var installGitlabRunnerScriptTemplate string
 
 var concurrency uint64
 var cpuOverrideRaw string
@@ -111,7 +107,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	config, err := tart.NewConfigFromEnvironment()
+	config, err := tart.NewConfigFromEnvironment(gitlab.EnvPrefixGitLabRunner)
 	if err != nil {
 		return err
 	}
@@ -161,12 +157,10 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 	log.Println("Was able to SSH!")
 
-	installGitlabRunnerScript, err := installGitlabRunnerScript(config.InstallGitlabRunner)
+	installGitlabRunnerScript, err := installGitlabRunnerScript(config.InstallGitlabRunner, os.Environ())
 	if err != nil {
 		return err
-	}
-
-	if installGitlabRunnerScript != "" {
+	} else if installGitlabRunnerScript != nil {
 		log.Println("Installing GitLab Runner...")
 
 		session, err := ssh.NewSession()
@@ -175,7 +169,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		}
 		defer session.Close()
 
-		session.Stdin = bytes.NewBufferString(installGitlabRunnerScript)
+		session.Stdin = installGitlabRunnerScript
 		session.Stdout = os.Stdout
 		session.Stderr = os.Stderr
 
@@ -362,28 +356,50 @@ func parseMemoryOverride(ctx context.Context, override string) (uint64, error) {
 	return strconv.ParseUint(override, 10, 64)
 }
 
-func installGitlabRunnerScript(installGitlabRunner string) (string, error) {
+func installGitlabRunnerScript(installGitlabRunner string, vars []string) (io.Reader, error) {
+	tplData := struct {
+		PackageManager       string
+		GitlabRunnerVersion  string
+		GitlabRunnerProvider string
+		Environ              []string
+	}{
+		PackageManager:       "brew",
+		GitlabRunnerVersion:  "latest",
+		GitlabRunnerProvider: "gitlab-runner-downloads.s3.amazonaws.com",
+		Environ:              gitlab.CustomExecutorEnvironment(vars),
+	}
+
 	switch installGitlabRunner {
-	case "brew":
-		return installGitlabRunnerBrewScript, nil
-	case "curl":
-		return installGitlabRunnerCurlScript, nil
+	case "brew", "curl":
+		tplData.PackageManager = installGitlabRunner
 	case "true", "yes", "on":
 		log.Printf("%q value for TART_EXECUTOR_INSTALL_GITLAB_RUNNER will deprecated "+
 			"in next version, please use either \"brew\", \"curl\" or \"major.minor.patch\"",
 			installGitlabRunner)
 
-		return installGitlabRunnerScriptAuto, nil
+		tplData.PackageManager = ""
 	case "":
-		return "", nil
+		return nil, nil //nolint:nilnil
 	default:
 		version, err := semver.NewVersion(installGitlabRunner)
-		if err == nil {
-			return strings.ReplaceAll(installGitlabRunnerCurlScript, "${GITLAB_RUNNER_VERSION}",
-				"v"+version.String()), nil
+		if err != nil {
+			return nil, fmt.Errorf("%w: TART_EXECUTOR_INSTALL_GITLAB_RUNNER only accepts "+
+				"\"brew\", \"curl\" or \"major.minor.patch\", got %q", ErrFailed, installGitlabRunner)
 		}
 
-		return "", fmt.Errorf("%w: TART_EXECUTOR_INSTALL_GITLAB_RUNNER only accepts "+
-			"\"brew\", \"curl\" or \"major.minor.patch\", got %q", ErrFailed, installGitlabRunner)
+		tplData.PackageManager = "curl"
+		tplData.GitlabRunnerVersion = "v" + version.String()
 	}
+
+	tmpl, err := template.New("gitlab-runner-installation").Parse(installGitlabRunnerScriptTemplate)
+	if err != nil {
+		return nil, err
+	}
+
+	var b bytes.Buffer
+	if err := tmpl.Execute(&b, tplData); err != nil {
+		return nil, err
+	}
+
+	return &b, nil
 }

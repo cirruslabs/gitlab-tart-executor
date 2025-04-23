@@ -9,35 +9,30 @@ import (
 var ErrConfigFromEnvironmentFailed = errors.New("failed to load config from environment")
 
 const (
-	// GitLab CI/CD environment adds "CUSTOM_ENV_" prefix[1] to prevent
-	// conflicts with system environment variables.
-	//
-	// [1]: https://docs.gitlab.com/runner/executors/custom.html#stages
-	envPrefixGitLabRunner = "CUSTOM_ENV_"
-
-	// The prefix that we use to avoid confusion with Cirrus CI Cloud variables
+	// EnvPrefixTartExecutor is the environment variable prefix that we
+	// use to avoid confusion with Cirrus CI Cloud variables
 	// and remove repetition from the Config's struct declaration.
-	envPrefixTartExecutor = "TART_EXECUTOR_"
+	EnvPrefixTartExecutor = "TART_EXECUTOR_"
 
 	// EnvTartExecutorInternalBuildsDir is an internal environment variable
 	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
 	// by the user.
-	EnvTartExecutorInternalBuildsDir = "TART_EXECUTOR_INTERNAL_BUILDS_DIR"
+	EnvTartExecutorInternalBuildsDir = EnvPrefixTartExecutor + "INTERNAL_BUILDS_DIR"
 
 	// EnvTartExecutorInternalBuildsDirOnHost is an internal environment variable
 	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
 	// by the user.
-	EnvTartExecutorInternalBuildsDirOnHost = "TART_EXECUTOR_INTERNAL_BUILDS_DIR_ON_HOST"
+	EnvTartExecutorInternalBuildsDirOnHost = EnvPrefixTartExecutor + "INTERNAL_BUILDS_DIR_ON_HOST"
 
 	// EnvTartExecutorInternalCacheDir is an internal environment variable
 	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
 	// by the user.
-	EnvTartExecutorInternalCacheDir = "TART_EXECUTOR_INTERNAL_CACHE_DIR"
+	EnvTartExecutorInternalCacheDir = EnvPrefixTartExecutor + "INTERNAL_CACHE_DIR"
 
 	// EnvTartExecutorInternalCacheDirOnHost is an internal environment variable
 	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
 	// by the user.
-	EnvTartExecutorInternalCacheDirOnHost = "TART_EXECUTOR_INTERNAL_CACHE_DIR_ON_HOST"
+	EnvTartExecutorInternalCacheDirOnHost = EnvPrefixTartExecutor + "INTERNAL_CACHE_DIR_ON_HOST"
 )
 
 type Config struct {
@@ -59,11 +54,11 @@ type Config struct {
 	Timezone            string `env:"TIMEZONE"`
 }
 
-func NewConfigFromEnvironment() (Config, error) {
+func NewConfigFromEnvironment(varPrefix string) (Config, error) {
 	var config Config
 
 	if err := env.ParseWithOptions(&config, env.Options{
-		Prefix: envPrefixGitLabRunner + envPrefixTartExecutor,
+		Prefix: varPrefix + EnvPrefixTartExecutor,
 	}); err != nil {
 		return config, fmt.Errorf("%w: %v", ErrConfigFromEnvironmentFailed, err)
 	}
