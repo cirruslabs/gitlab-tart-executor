@@ -8,6 +8,15 @@ import (
 	"strconv"
 )
 
+const (
+	// EnvPrefixGitLabRunner is the environment variable prefix
+	// GitLab CI/CD adds [1] to prevent conflicts with system
+	// environment variables.
+	//
+	// [1]: https://docs.gitlab.com/runner/executors/custom.html#stages
+	EnvPrefixGitLabRunner = "CUSTOM_ENV_"
+)
+
 var ErrGitLabEnv = errors.New("GitLab environment error")
 
 type Env struct {
@@ -64,4 +73,10 @@ func InitEnv() (*Env, error) {
 	}
 
 	return result, nil
+}
+
+// LookupEnv passes the given key prefixed with
+// [EnvPrefixGitLabRunner] to [os.LookupEnv].
+func LookupEnv(key string) (string, bool) {
+	return os.LookupEnv(EnvPrefixGitLabRunner + key)
 }

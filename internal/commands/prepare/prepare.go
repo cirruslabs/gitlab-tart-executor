@@ -100,7 +100,8 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 	if gitLabEnv.JobImage == "" {
 		if defaultImage == "" {
-			return fmt.Errorf("%w: CUSTOM_ENV_CI_JOB_ID is missing and no --default-image was set", ErrFailed)
+			return fmt.Errorf("%w: %sCI_JOB_ID is missing and no --default-image was set",
+				ErrFailed, gitlab.EnvPrefixGitLabRunner)
 		}
 
 		gitLabEnv.JobImage = defaultImage
@@ -111,7 +112,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	config, err := tart.NewConfigFromEnvironment()
+	config, err := tart.NewConfigFromEnvironment(gitlab.EnvPrefixGitLabRunner)
 	if err != nil {
 		return err
 	}
@@ -293,17 +294,17 @@ func ensureImageIsAllowed(image string) error {
 
 func additionalPullEnv(registry *gitlab.Registry) map[string]string {
 	// Prefer manual registry credentials override from the user
-	tartRegistryUsername, tartRegistryUsernameOK := os.LookupEnv("CUSTOM_ENV_TART_REGISTRY_USERNAME")
-	tartRegistryPassword, tartRegistryPasswordOK := os.LookupEnv("CUSTOM_ENV_TART_REGISTRY_PASSWORD")
+	tartRegistryUsername, tartRegistryUsernameOK := gitlab.LookupEnv(tart.EnvTartRegistryUsername)
+	tartRegistryPassword, tartRegistryPasswordOK := gitlab.LookupEnv(tart.EnvTartRegistryPassword)
 	if tartRegistryUsernameOK && tartRegistryPasswordOK {
 		result := map[string]string{
-			"TART_REGISTRY_USERNAME": tartRegistryUsername,
-			"TART_REGISTRY_PASSWORD": tartRegistryPassword,
+			tart.EnvTartRegistryUsername: tartRegistryUsername,
+			tart.EnvTartRegistryPassword: tartRegistryPassword,
 		}
 
-		tartRegistryHostname, tartRegistryHostnameOK := os.LookupEnv("CUSTOM_ENV_TART_REGISTRY_HOSTNAME")
+		tartRegistryHostname, tartRegistryHostnameOK := gitlab.LookupEnv(tart.EnvTartRegistryHostname)
 		if tartRegistryHostnameOK {
-			result["TART_REGISTRY_HOSTNAME"] = tartRegistryHostname
+			result[tart.EnvTartRegistryHostname] = tartRegistryHostname
 		}
 
 		return result
@@ -312,9 +313,9 @@ func additionalPullEnv(registry *gitlab.Registry) map[string]string {
 	// Otherwise fallback to GitLab's provided registry credentials, if any
 	if registry != nil {
 		return map[string]string{
-			"TART_REGISTRY_HOSTNAME": registry.Address,
-			"TART_REGISTRY_USERNAME": registry.User,
-			"TART_REGISTRY_PASSWORD": registry.Password,
+			tart.EnvTartRegistryHostname: registry.Address,
+			tart.EnvTartRegistryUsername: registry.User,
+			tart.EnvTartRegistryPassword: registry.Password,
 		}
 	}
 
