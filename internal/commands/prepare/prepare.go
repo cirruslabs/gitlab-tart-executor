@@ -6,7 +6,6 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"github.com/Masterminds/semver/v3"
 	"github.com/alecthomas/units"
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
@@ -15,22 +14,18 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/spf13/cobra"
+	"io"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	"text/template"
 )
 
 var ErrFailed = errors.New("\"prepare\" stage failed")
 
-//go:embed install-gitlab-runner-auto.sh
-var installGitlabRunnerScriptAuto string
-
-//go:embed install-gitlab-runner-brew.sh
-var installGitlabRunnerBrewScript string
-
-//go:embed install-gitlab-runner-curl.sh
-var installGitlabRunnerCurlScript string
+//go:embed install-gitlab-runner.sh.tpl
+var installGitlabRunnerScriptTemplate string
 
 var concurrency uint64
 var cpuOverrideRaw string
@@ -161,13 +156,15 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 
 	log.Println("Was able to SSH!")
 
-	installGitlabRunnerScript, err := installGitlabRunnerScript(config.InstallGitlabRunner)
-	if err != nil {
-		return err
-	}
-
-	if installGitlabRunnerScript != "" {
+	if config.InstallGitlabRunner != "" {
 		log.Println("Installing GitLab Runner...")
+
+		installGitlabRunnerScript, err := installGitlabRunnerScript(
+			withGitlabRunnerInstaller(config.InstallGitlabRunner),
+		)
+		if err != nil {
+			return err
+		}
 
 		session, err := ssh.NewSession()
 		if err != nil {
@@ -175,7 +172,7 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		}
 		defer session.Close()
 
-		session.Stdin = bytes.NewBufferString(installGitlabRunnerScript)
+		session.Stdin = installGitlabRunnerScript
 		session.Stdout = os.Stdout
 		session.Stderr = os.Stderr
 
@@ -362,28 +359,28 @@ func parseMemoryOverride(ctx context.Context, override string) (uint64, error) {
 	return strconv.ParseUint(override, 10, 64)
 }
 
-func installGitlabRunnerScript(installGitlabRunner string) (string, error) {
-	switch installGitlabRunner {
-	case "brew":
-		return installGitlabRunnerBrewScript, nil
-	case "curl":
-		return installGitlabRunnerCurlScript, nil
-	case "true", "yes", "on":
-		log.Printf("%q value for TART_EXECUTOR_INSTALL_GITLAB_RUNNER will deprecated "+
-			"in next version, please use either \"brew\", \"curl\" or \"major.minor.patch\"",
-			installGitlabRunner)
-
-		return installGitlabRunnerScriptAuto, nil
-	case "":
-		return "", nil
-	default:
-		version, err := semver.NewVersion(installGitlabRunner)
-		if err == nil {
-			return strings.ReplaceAll(installGitlabRunnerCurlScript, "${GITLAB_RUNNER_VERSION}",
-				"v"+version.String()), nil
-		}
-
-		return "", fmt.Errorf("%w: TART_EXECUTOR_INSTALL_GITLAB_RUNNER only accepts "+
-			"\"brew\", \"curl\" or \"major.minor.patch\", got %q", ErrFailed, installGitlabRunner)
+func installGitlabRunnerScript(options ...templateOption) (io.Reader, error) {
+	tplData := &templateConfig{
+		PackageManager:       "brew",
+		GitlabRunnerVersion:  "latest",
+		GitlabRunnerProvider: "gitlab-runner-downloads.s3.amazonaws.com",
 	}
+
+	for _, o := range options {
+		if err := o(tplData); err != nil {
+			return nil, err
+		}
+	}
+
+	tmpl, err := template.New("gitlab-runner-installation").Parse(installGitlabRunnerScriptTemplate)
+	if err != nil {
+		return nil, err
+	}
+
+	var b bytes.Buffer
+	if err := tmpl.Execute(&b, tplData); err != nil {
+		return nil, err
+	}
+
+	return &b, nil
 }

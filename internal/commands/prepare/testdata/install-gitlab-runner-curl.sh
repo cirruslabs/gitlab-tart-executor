@@ -10,31 +10,14 @@
 #
 set -euo pipefail
 
-OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-ARCH=$(uname -m)
-case $ARCH in
-  aarch64)
-      ARCH="arm64"
-      ;;
-  x86_64)
-      ARCH="amd64"
-      ;;
-esac
-
-GITLAB_RUNNER_URL="https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-${OS}-${ARCH}"
-GITLAB_RUNNER_PATH="/usr/local/bin/gitlab-runner"
-
-# Is GitLab Runner already installed?
-if type gitlab-runner &> /dev/null
-then
-  echo "GitLab Runner is already installed, skipping installation"
-
-  exit 0
-fi
-
 function install_via_brew() {
-  echo "Installing GitLab Runner via Homebrew..."
+  if test "$1" != "latest"; then
+    echo "Installing specific GitLab Runner version via Homebrew is not supported"
 
+    exit 1
+  fi
+
+  echo "Installing GitLab Runner via Homebrew..."
   brew install gitlab-runner
 }
 
@@ -48,6 +31,21 @@ function install_via_curl() {
     exit 1
   fi
 
+  OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+  ARCH=$(uname -m)
+  case $ARCH in
+    aarch64) ARCH="arm64" ;;
+    x86_64)  ARCH="amd64" ;;
+  esac
+
+  GITLAB_RUNNER_URL="https://gitlab-runner-downloads.s3.amazonaws.com/${1}/binaries/gitlab-runner-${OS}-${ARCH}"
+  GITLAB_RUNNER_FILE=$(mktemp "${TMPDIR:-/tmp}/gitlab-runner.XXXXXX")
+  GITLAB_RUNNER_PATH="/usr/local/bin/gitlab-runner"
+
+  echo "Downloading GitLab Runner from $GITLAB_RUNNER_URL..."
+  curl --output "$GITLAB_RUNNER_FILE" "$GITLAB_RUNNER_URL"
+  chmod +x "$GITLAB_RUNNER_FILE"
+
   # /usr/local is empty on fresh macOS installations
   # (for example, try ghcr.io/cirruslabs/macos-ventura-vanilla:latest)
   if test ! -e /usr/local/bin
@@ -56,23 +54,18 @@ function install_via_curl() {
     sudo mkdir -p /usr/local/bin
   fi
 
-  echo "Downloading GitLab Runner from $GITLAB_RUNNER_URL to $GITLAB_RUNNER_PATH..."
-  sudo curl --output "$GITLAB_RUNNER_PATH" "$GITLAB_RUNNER_URL"
-
-  echo "Making $GITLAB_RUNNER_PATH executable..."
-  sudo chmod +x "$GITLAB_RUNNER_PATH"
+  echo "Installing $GITLAB_RUNNER_PATH executable..."
+  sudo mv -v "$GITLAB_RUNNER_FILE" "$GITLAB_RUNNER_PATH"
 }
 
-if type brew &> /dev/null
+# Is GitLab Runner already installed?
+if type gitlab-runner &> /dev/null
 then
-  install_via_brew
-elif type curl &> /dev/null
-then
-  install_via_curl
-else
-  echo "Failed to install GitLab Runner: no Homebrew nor cURL were available!"
+  echo "GitLab Runner is already installed, skipping installation"
 
-  exit 1
+  exit 0
 fi
+
+install_via_curl "latest"
 
 echo "GitLab Runner was successfully installed!"
