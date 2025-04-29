@@ -70,7 +70,7 @@ func NewCommand() *cobra.Command {
 	return command
 }
 
-//nolint:gocognit,gocyclo // looks good for now
+//nolint:gocognit,gocyclo,nestif // looks good for now
 func runPrepareVM(cmd *cobra.Command, args []string) error {
 	cpuOverride, err := parseCPUOverride(cmd.Context(), cpuOverrideRaw)
 	if err != nil {
@@ -172,11 +172,35 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 		}
 		defer session.Close()
 
-		session.Stdin = bytes.NewBufferString(installGitlabRunnerScript)
+		stdinBuf, err := session.StdinPipe()
+		if err != nil {
+			return err
+		}
+
 		session.Stdout = os.Stdout
 		session.Stderr = os.Stderr
 
 		if err := session.Shell(); err != nil {
+			return err
+		}
+
+		// Expose GitLab job environment variables to GitLab Runner installation script
+		for _, keyAndValue := range os.Environ() {
+			keyAndValue, found := strings.CutPrefix(keyAndValue, "CUSTOM_ENV_")
+			if !found {
+				// Doesn't look like a GitLab job environment variable
+				continue
+			}
+
+			key, value, _ := strings.Cut(keyAndValue, "=")
+
+			if _, err := fmt.Fprintf(stdinBuf, "export %s=\"%s\"\n", key, value); err != nil {
+				return err
+			}
+		}
+
+		// Perform GitLab Runner installation
+		if _, err := stdinBuf.Write([]byte(installGitlabRunnerScript)); err != nil {
 			return err
 		}
 
