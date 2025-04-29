@@ -204,6 +204,10 @@ func runPrepareVM(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
+		if err := stdinBuf.Close(); err != nil {
+			return err
+		}
+
 		if err := session.Wait(); err != nil {
 			return err
 		}
