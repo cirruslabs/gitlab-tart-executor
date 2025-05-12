@@ -46,7 +46,13 @@ func NewCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "prepare",
 		Short: "Prepare a Tart VM for execution",
-		RunE:  runPrepareVM,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := runPrepareVM(cmd, args); err != nil {
+				return gitlab.NewSystemFailureError(err)
+			}
+
+			return nil
+		},
 	}
 
 	command.PersistentFlags().Uint64Var(&concurrency, "concurrency", 1,
@@ -74,7 +80,7 @@ func NewCommand() *cobra.Command {
 }
 
 //nolint:gocognit,gocyclo,nestif // looks good for now
-func runPrepareVM(cmd *cobra.Command, args []string) error {
+func runPrepareVM(cmd *cobra.Command, _ []string) error {
 	cpuOverride, err := parseCPUOverride(cmd.Context(), cpuOverrideRaw)
 	if err != nil {
 		return err
