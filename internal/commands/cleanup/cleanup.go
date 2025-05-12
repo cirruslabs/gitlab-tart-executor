@@ -12,13 +12,19 @@ func NewCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "cleanup",
 		Short: "Cleanup Tart VM after job finishes",
-		RunE:  cleanupVM,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := cleanupVM(cmd, args); err != nil {
+				return gitlab.NewSystemFailureError(err)
+			}
+
+			return nil
+		},
 	}
 
 	return command
 }
 
-func cleanupVM(cmd *cobra.Command, args []string) error {
+func cleanupVM(_ *cobra.Command, _ []string) error {
 	gitLabEnv, err := gitlab.InitEnv()
 	if err != nil {
 		return err

@@ -30,7 +30,13 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
 		Short: "Configure GitLab Runner",
-		RunE:  runConfig,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := runConfig(cmd, args); err != nil {
+				return gitlab.NewSystemFailureError(err)
+			}
+
+			return nil
+		},
 	}
 
 	cmd.PersistentFlags().StringVar(&buildsDir, "builds-dir", "",
@@ -49,7 +55,7 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-func runConfig(cmd *cobra.Command, args []string) error {
+func runConfig(_ *cobra.Command, _ []string) error {
 	gitlabRunnerDriver := map[string]string{
 		driverName:    tart.TartCommandName,
 		driverVersion: version.FullVersion,
