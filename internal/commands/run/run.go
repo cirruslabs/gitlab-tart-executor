@@ -1,9 +1,13 @@
 package run
 
 import (
+	"errors"
+	"fmt"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh"
+	"log"
 	"os"
 )
 
@@ -39,31 +43,56 @@ func runScriptInsideVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	ssh, err := vm.OpenSSH(cmd.Context(), config)
+	sshClient, err := vm.OpenSSH(cmd.Context(), config)
 	if err != nil {
 		return err
 	}
-	defer ssh.Close()
+	defer sshClient.Close()
 
-	session, err := ssh.NewSession()
+	sshSession, err := sshClient.NewSession()
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer sshSession.Close()
 
 	// GitLab script ends with an `exit` command which will terminate the SSH session
-	session.Stdin = scriptFile
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
+	sshSession.Stdin = scriptFile
+	sshSession.Stdout = os.Stdout
+	sshSession.Stderr = os.Stderr
 
 	if config.Shell != "" {
-		err = session.Start(config.Shell)
+		err = sshSession.Start(config.Shell)
 	} else {
-		err = session.Shell()
+		err = sshSession.Shell()
 	}
 	if err != nil {
 		return err
 	}
 
-	return session.Wait()
+	if err = sshSession.Wait(); err != nil {
+		var sshExitError *ssh.ExitError
+		if errors.As(err, &sshExitError) {
+			propagateSSHExitError(sshExitError)
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func propagateSSHExitError(sshExitError *ssh.ExitError) {
+	exitCodeFile, ok := os.LookupEnv("BUILD_EXIT_CODE_FILE")
+	if !ok {
+		return
+	}
+
+	//nolint:gosec // G306 shouldn't apply here as we're not writing anything sensitive
+	err := os.WriteFile(exitCodeFile, []byte(fmt.Sprintf("%d\n", sshExitError.ExitStatus())),
+		0644)
+	if err != nil {
+		log.Printf("failed to propagate SSH command exit code to a file"+
+			"pointed by the BUILD_EXIT_CODE_FILE environment variable (%q): %v",
+			exitCodeFile, err)
+	}
 }
