@@ -113,6 +113,13 @@ func (vm *VM) cloneAndConfigure(
 		}
 	}
 
+	if config.Display != "" {
+		_, _, err = TartExec(ctx, "set", "--display", config.Display, vm.id)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
