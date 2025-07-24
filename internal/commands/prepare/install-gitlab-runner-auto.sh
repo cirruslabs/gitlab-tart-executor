@@ -33,6 +33,10 @@ then
 fi
 
 function install_via_brew() {
+  echo "Updating Homebrew..."
+
+  brew update
+
   echo "Installing GitLab Runner via Homebrew..."
 
   brew install gitlab-runner

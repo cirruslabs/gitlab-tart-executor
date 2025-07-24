@@ -18,6 +18,10 @@ then
   exit 0
 fi
 
+echo "Updating Homebrew..."
+
+brew update
+
 echo "Installing GitLab Runner via Homebrew..."
 
 brew install gitlab-runner
