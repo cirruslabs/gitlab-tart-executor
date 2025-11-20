@@ -3,12 +3,13 @@ package run
 import (
 	"errors"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
-	"log"
-	"os"
 )
 
 func NewCommand() *cobra.Command {
@@ -88,7 +89,7 @@ func propagateSSHExitError(sshExitError *ssh.ExitError) {
 	}
 
 	//nolint:gosec // G306 shouldn't apply here as we're not writing anything sensitive
-	err := os.WriteFile(exitCodeFile, []byte(fmt.Sprintf("%d\n", sshExitError.ExitStatus())),
+	err := os.WriteFile(exitCodeFile, fmt.Appendf(nil, "%d\n", sshExitError.ExitStatus()),
 		0644)
 	if err != nil {
 		log.Printf("failed to propagate SSH command exit code to a file"+
