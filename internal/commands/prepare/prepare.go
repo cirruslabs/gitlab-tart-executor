@@ -6,6 +6,11 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/Masterminds/semver/v3"
 	"github.com/alecthomas/units"
 	"github.com/bmatcuk/doublestar/v4"
@@ -15,10 +20,6 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/spf13/cobra"
-	"log"
-	"os"
-	"strconv"
-	"strings"
 )
 
 var ErrFailed = errors.New("\"prepare\" stage failed")
@@ -41,6 +42,7 @@ var autoPrune bool
 var allowedImagePatterns []string
 var defaultImage string
 var nested bool
+var tartRunEnv []string
 
 func NewCommand() *cobra.Command {
 	command := &cobra.Command{
@@ -75,6 +77,8 @@ func NewCommand() *cobra.Command {
 		"A fallback Tart image to use, in case the job does not specify one")
 	command.PersistentFlags().BoolVar(&nested, "nested", false,
 		"Run the VM with nested virtualization enabled")
+	command.PersistentFlags().StringArrayVar(&tartRunEnv, "tart-run-env", []string{},
+		"environment variable overrides for \"tart run\"")
 
 	return command
 }
@@ -150,7 +154,7 @@ func runPrepareVM(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	err = vm.Start(config, gitLabEnv, customDirectoryMounts, customDiskMounts, nested)
+	err = vm.Start(config, gitLabEnv, customDirectoryMounts, customDiskMounts, nested, tartRunEnv)
 	if err != nil {
 		return err
 	}

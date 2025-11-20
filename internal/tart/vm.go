@@ -129,6 +129,7 @@ func (vm *VM) Start(
 	customDirectoryMounts []string,
 	customDiskMounts []string,
 	nested bool,
+	env []string,
 ) error {
 	var runArgs = []string{"run"}
 
@@ -183,6 +184,12 @@ func (vm *VM) Start(
 
 	//nolint:gosec,noctx // it's OK to launch a subrocess with variable, plus we can't use context.Context here
 	cmd := exec.Command(tartCommandPath, runArgs...)
+
+	// Base environment
+	cmd.Env = cmd.Environ()
+
+	// Environment overrides
+	cmd.Env = append(cmd.Env, env...)
 
 	outputFile, err := os.OpenFile(vm.tartRunOutputPath(), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
 	if err != nil {
