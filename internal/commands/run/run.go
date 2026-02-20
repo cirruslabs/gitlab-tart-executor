@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
+	"github.com/cirruslabs/gitlab-tart-executor/internal/localnetworkhelper"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
@@ -20,10 +21,17 @@ func NewCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 	}
 
+	localnetworkhelper.IntroduceFlag(command)
+
 	return command
 }
 
 func runScriptInsideVM(cmd *cobra.Command, args []string) error {
+	dialer, err := localnetworkhelper.ConnectAndDropPrivileges(cmd.Context())
+	if err != nil {
+		return err
+	}
+
 	scriptFile, err := os.Open(args[0])
 	if err != nil {
 		return err
@@ -44,7 +52,7 @@ func runScriptInsideVM(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	sshClient, err := vm.OpenSSH(cmd.Context(), config)
+	sshClient, err := vm.OpenSSH(cmd.Context(), config, dialer)
 	if err != nil {
 		return err
 	}

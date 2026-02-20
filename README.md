@@ -12,11 +12,15 @@ Custom [GitLab Runner](https://docs.gitlab.com/runner/) executor to run jobs ins
 > Waiting for the VM to boot and be SSH-able...
 > ```
 >
-> This is likely related to the [newly introduced "Local Network" permission](https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy) on macOS Sequoia and the fact that GitLab Runner's binary might have no `LC_UUID` identifier, which is critical for the local network privacy mechanism.
+> The [newly introduced "Local Network" permission](https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy) in macOS Sequoia requires accepting a GUI pop-up on each host machine that runs the GitLab Tart Executor.
 >
-> Make sure you have installed the latest GitLab Runner (`>=17.6.0`) [from Homebrew](https://formulae.brew.sh/formula/gitlab-runner).
+> To work around this, upgrade the GitLab Tart Executor to the latest version and [modify your GitLab Runner configuration](#configuration) to invoke the `gitlab-tart-executor` binary `root`, with an additional `--user` command-line argument, which takes a name of your regular, non-privileged user on the host machine.
 >
-> Homebrew version [includes a fix for lacking `LC_UUID`](https://github.com/Homebrew/homebrew-core/commit/77fcd447733f6f063ef4f635202d3748fdfb8e26) and it should ask you for a "Local Network" permission correctly when GitLab Tart Executor tries to establish connection with the Tart VMs.
+> This will cause the GitLab Tart Executor to start a small `gitlab-tart-executor localnetworkhelper` process in the background and then drop the privileges to the specified user.
+>
+>This helper process is privileged and is needed to establish network connections on behalf of the GitLab Tart Executor without triggering a GUI pop-up.
+>
+>This approach is more secure than simply running `gitlab-tart-executor` as `root`, because only a small part of the program runs privileged, and the only functionality that this part is performing is establishing new connections.
 
 ## Configuration
 
@@ -42,6 +46,29 @@ concurrent = 2
     cleanup_exec = "gitlab-tart-executor"
     cleanup_args = ["cleanup"]
 ```
+
+To use the "Local Network" helper process (see the note in the beginning of this `README.md`), additionally modify the `prepare` and `run` stages as follows:
+
+```toml
+concurrent = 2
+
+[[runners]]
+  # ...
+  executor = "custom"
+  [runners.feature_flags]
+    FF_RESOLVE_FULL_TLS_CHAIN = false
+  [runners.custom]
+    config_exec = "gitlab-tart-executor"
+    config_args = ["config"]
+    prepare_exec = "sudo"
+    prepare_args = ["-E", "gitlab-tart-executor", "prepare", "--user", "$USER", "--concurrency", "2", "--cpu", "auto", "--memory", "auto"]
+    run_exec = "sudo"
+    run_args = ["-E", "gitlab-tart-executor", "run", "--user", "$USER"]
+    cleanup_exec = "gitlab-tart-executor"
+    cleanup_args = ["cleanup"]
+```
+
+And replace the `$USER` with the name of your regular, non-privileged user on the host machine.
 
 Now you can use Tart Images in your `.gitlab-ci.yml`:
 
@@ -182,6 +209,14 @@ that required paid sponsorship upon exceeding a free limit.
 | `--default-image` |             | A fallback Tart image to use, in case the job does not specify one                                                                                              |
 | `--nested`        | false       | Run VMs with [nested virtualization](https://tart.run/faq/#nested-virtualization-support) enabled                                                               |
 | `--tart-run-env`  |             | Environment variable overrides for `tart run`                                                                                                                   |
+| `--user`          |             | username to drop privileges to (see the note in the beginning of this `README.md` about "Local Network" helper process)                                         |
+
+### `run` stage
+
+
+| Argument          | Default     | Description                                                                                                                                                     |
+|-------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--user`          |             | username to drop privileges to (see the note in the beginning of this `README.md` about "Local Network" helper process)                                         |
 
 <sup>1</sup>: automatically distributes all host resources according to the concurrency level (for example, VM gets all of the host CPU and RAM assigned when `--concurrency` is 1, and half of that when `--concurrency` is 2)
 

@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v4"
+	"github.com/cirruslabs/gitlab-tart-executor/internal/dialer"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"golang.org/x/crypto/ssh"
 )
@@ -238,7 +239,7 @@ func (vm *VM) MonitorTartRunOutput() {
 	}
 }
 
-func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
+func (vm *VM) OpenSSH(ctx context.Context, config Config, dialer dialer.Dialer) (*ssh.Client, error) {
 	var ip string
 	var err error
 
@@ -271,8 +272,6 @@ func (vm *VM) OpenSSH(ctx context.Context, config Config) (*ssh.Client, error) {
 	var sshClient *ssh.Client
 
 	if err := retry.Do(func() error {
-		dialer := net.Dialer{}
-
 		netConn, err := dialer.DialContext(ctx, "tcp", addr)
 		if err != nil {
 			return err
