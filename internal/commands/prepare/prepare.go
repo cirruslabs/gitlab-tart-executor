@@ -214,7 +214,7 @@ func runPrepareVM(cmd *cobra.Command, _ []string) error {
 
 			key, value, _ := strings.Cut(keyAndValue, "=")
 
-			if _, err := fmt.Fprintf(stdinBuf, "export %s=\"%s\"\n", key, value); err != nil {
+			if _, err := fmt.Fprintf(stdinBuf, "export %q=%q\n", key, value); err != nil {
 				return err
 			}
 		}
