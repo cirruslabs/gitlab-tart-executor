@@ -56,6 +56,7 @@ func gitlabExitCode(key string) int {
 
 	exitCode, err := strconv.Atoi(exitCodeRaw)
 	if err != nil {
+		//nolint:gosec // G706 is a false-positive here: key is pre-determined and exitCodeRaw is escaped with %q
 		log.Fatalf("failed to parse %s's value %q: %v", key, exitCodeRaw, err)
 	}
 
