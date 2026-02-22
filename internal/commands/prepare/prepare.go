@@ -15,6 +15,7 @@ import (
 	"github.com/alecthomas/units"
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
+	"github.com/cirruslabs/gitlab-tart-executor/internal/localnetworkhelper"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/tart"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/timezone"
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -80,11 +81,18 @@ func NewCommand() *cobra.Command {
 	command.PersistentFlags().StringArrayVar(&tartRunEnv, "tart-run-env", []string{},
 		"environment variable overrides for \"tart run\"")
 
+	localnetworkhelper.IntroduceFlag(command)
+
 	return command
 }
 
 //nolint:gocognit,gocyclo,nestif // looks good for now
 func runPrepareVM(cmd *cobra.Command, _ []string) error {
+	dialer, err := localnetworkhelper.ConnectAndDropPrivileges(cmd.Context())
+	if err != nil {
+		return err
+	}
+
 	cpuOverride, err := parseCPUOverride(cmd.Context(), cpuOverrideRaw)
 	if err != nil {
 		return err
@@ -162,7 +170,7 @@ func runPrepareVM(cmd *cobra.Command, _ []string) error {
 	go vm.MonitorTartRunOutput()
 
 	log.Println("Waiting for the VM to boot and be SSH-able...")
-	ssh, err := vm.OpenSSH(cmd.Context(), config)
+	ssh, err := vm.OpenSSH(cmd.Context(), config, dialer)
 	if err != nil {
 		return err
 	}

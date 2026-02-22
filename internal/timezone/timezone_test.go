@@ -457,7 +457,7 @@ func TestParseTimezoneAuto(t *testing.T) {
 }
 
 func TestParseTimezoneNormal(t *testing.T) {
-	for _, rawTZ := range strings.Split(strings.TrimSpace(systemsetupListtimezones), "\n") {
+	for rawTZ := range strings.SplitSeq(strings.TrimSpace(systemsetupListtimezones), "\n") {
 		t.Run(rawTZ, func(t *testing.T) {
 			tz, err := timezone.Parse(rawTZ)
 			require.NoError(t, err)
