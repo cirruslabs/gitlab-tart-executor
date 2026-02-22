@@ -384,7 +384,7 @@ func TartExecWithEnv(
 
 func firstNonEmptyLine(outputs ...string) string {
 	for _, output := range outputs {
-		for _, line := range strings.Split(output, "\n") {
+		for line := range strings.SplitSeq(output, "\n") {
 			if line != "" {
 				return line
 			}
