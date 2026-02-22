@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/cirruslabs/gitlab-tart-executor/internal/commands"
-	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"log"
 	"os"
 	"os/signal"
 	"strconv"
+
+	"github.com/cirruslabs/gitlab-tart-executor/internal/commands"
+	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 )
 
 func main() {
@@ -17,6 +18,12 @@ func main() {
 
 	interruptCh := make(chan os.Signal, 1)
 	signal.Notify(interruptCh, os.Interrupt)
+
+	// Disable timestamps in logs since GitLab Runner automatically
+	// adds them for us, see FF_TIMESTAMPS[1], which defaults to "true".
+	//
+	// [1]: https://docs.gitlab.com/runner/configuration/feature-flags/
+	log.SetFlags(log.LstdFlags &^ (log.Ldate | log.Ltime))
 
 	go func() {
 		select {
@@ -49,6 +56,7 @@ func gitlabExitCode(key string) int {
 
 	exitCode, err := strconv.Atoi(exitCodeRaw)
 	if err != nil {
+		//nolint:gosec // G706 is a false-positive here: key is pre-determined and exitCodeRaw is escaped with %q
 		log.Fatalf("failed to parse %s's value %q: %v", key, exitCodeRaw, err)
 	}
 
