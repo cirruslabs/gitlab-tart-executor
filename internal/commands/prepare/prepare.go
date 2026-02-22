@@ -148,7 +148,6 @@ func runPrepareVM(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	log.Println("Cloning and configuring a new VM...")
 	vm, err := tart.CreateNewVM(cmd.Context(), gitLabEnv.VirtualMachineID(), gitLabEnv.JobImage,
 		config, cpuOverride, memoryOverride, additionalCloneAndPullEnv)
 	if err != nil {

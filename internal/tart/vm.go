@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -76,6 +77,8 @@ func (vm *VM) cloneAndConfigure(
 	memoryOverride uint64,
 	additionalCloneAndPullEnv map[string]string,
 ) error {
+	log.Println("Cloning a new VM...")
+
 	cloneArgs := []string{"clone", image, vm.id}
 
 	if config.InsecurePull {
@@ -91,6 +94,8 @@ func (vm *VM) cloneAndConfigure(
 	if err != nil {
 		return err
 	}
+
+	log.Println("Configuring a new VM...")
 
 	if cpuOverride != 0 {
 		_, _, err = TartExec(ctx, "set", "--cpu", strconv.FormatUint(cpuOverride, 10), vm.id)
