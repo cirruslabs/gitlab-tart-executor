@@ -214,7 +214,7 @@ func runPrepareVM(cmd *cobra.Command, _ []string) error {
 
 			key, value, _ := strings.Cut(keyAndValue, "=")
 
-			if _, err := fmt.Fprintf(stdinBuf, "export %q=%q\n", key, value); err != nil {
+			if _, err := fmt.Fprintf(stdinBuf, "export %s=%s\n", key, quote(value)); err != nil {
 				return err
 			}
 		}
@@ -431,4 +431,8 @@ func installGitlabRunnerScript(installGitlabRunner string) (string, error) {
 		return "", fmt.Errorf("%w: TART_EXECUTOR_INSTALL_GITLAB_RUNNER only accepts "+
 			"\"brew\", \"curl\" or \"major.minor.patch\", got %q", ErrFailed, installGitlabRunner)
 	}
+}
+
+func quote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
 }
