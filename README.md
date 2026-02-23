@@ -34,6 +34,7 @@ concurrent = 2
 [[runners]]
   # ...
   executor = "custom"
+  clean_git_config = false
   [runners.feature_flags]
     FF_RESOLVE_FULL_TLS_CHAIN = false
   [runners.custom]
@@ -137,6 +138,7 @@ concurrent = 2
 [[runners]]
   # ...
   executor = "custom"
+  clean_git_config = false
   [runners.feature_flags]
     FF_RESOLVE_FULL_TLS_CHAIN = false
   [runners.custom]
