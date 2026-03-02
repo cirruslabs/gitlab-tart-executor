@@ -4,7 +4,7 @@ Custom [GitLab Runner](https://docs.gitlab.com/runner/) executor to run jobs ins
 
 > [!IMPORTANT]
 >
-> **macOS 15 (Sequoia)**
+> **macOS 15 (Sequoia) or later**
 >
 > In case you've upgraded and encountering an issue below:
 >
