@@ -14,13 +14,22 @@ Custom [GitLab Runner](https://docs.gitlab.com/runner/) executor to run jobs ins
 >
 > The [newly introduced "Local Network" permission](https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy) in macOS Sequoia requires accepting a GUI pop-up on each host machine that runs the GitLab Tart Executor.
 >
-> To work around this, upgrade the GitLab Tart Executor to the latest version and [modify your GitLab Runner configuration](#configuration) to invoke the `gitlab-tart-executor` binary `root`, with an additional `--user` command-line argument, which takes a name of your regular, non-privileged user on the host machine.
+> To work around this, there are two options. The first one is to [modify your GitLab Runner configuration](#configuration) to invoke the `gitlab-tart-executor` binary as `root`, with an additional `--user` command-line argument, which takes the name of your regular, non-privileged user on the host machine.
 >
 > This will cause the GitLab Tart Executor to start a small `gitlab-tart-executor localnetworkhelper` process in the background and then drop the privileges to the specified user.
 >
 >This helper process is privileged and is needed to establish network connections on behalf of the GitLab Tart Executor without triggering a GUI pop-up.
 >
 >This approach is more secure than simply running `gitlab-tart-executor` as `root`, because only a small part of the program runs privileged, and the only functionality that this part is performing is establishing new connections.
+>
+> The second workaround is to [set the local network privacy preferences](https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy#macOS-considerations) so that all [IPv4 private address space](https://datatracker.ietf.org/doc/html/rfc1918#section-3) that could potentially be used for VMs is excluded:
+>
+> ```shell
+> sudo defaults write com.apple.network.local-network AllowedEthernetLocalNetworkAddresses -array "10.0.0.0/8" "172.16.0.0/12" "192.168.0.0/16"
+> sudo defaults write com.apple.network.local-network AllowedWiFiLocalNetworkAddresses -array "10.0.0.0/8" "172.16.0.0/12" "192.168.0.0/16"
+> ```
+>
+> ...and then reboot.
 
 ## Configuration
 
