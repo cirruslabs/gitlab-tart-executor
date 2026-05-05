@@ -64,6 +64,12 @@ func runScriptInsideVM(cmd *cobra.Command, args []string) error {
 	}
 	defer sshSession.Close()
 
+	if config.PassVMName {
+		if err := sshSession.Setenv("TART_EXECUTOR_VM_NAME", gitLabEnv.VirtualMachineID()); err != nil {
+			return err
+		}
+	}
+
 	// GitLab script ends with an `exit` command which will terminate the SSH session
 	sshSession.Stdin = scriptFile
 	sshSession.Stdout = os.Stdout

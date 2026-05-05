@@ -56,6 +56,7 @@ type Config struct {
 	HostDir             bool   `env:"HOST_DIR"`
 	Shell               string `env:"SHELL"`
 	InstallGitlabRunner string `env:"INSTALL_GITLAB_RUNNER"`
+	PassVMName          bool   `env:"PASS_VM_NAME" envDefault:"false"`
 	Timezone            string `env:"TIMEZONE"`
 	Display             string `env:"DISPLAY"`
 }

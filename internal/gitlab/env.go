@@ -20,7 +20,7 @@ type Env struct {
 type Registry struct {
 	Address  string
 	User     string
-	Password string //nolint:gosec // G117 is a false-positive here: we don't serialize this structure (e.g. JSON)
+	Password string  // G117 is a false-positive here: we don't serialize this structure (e.g. JSON)
 }
 
 func (e Env) VirtualMachineID() string {
