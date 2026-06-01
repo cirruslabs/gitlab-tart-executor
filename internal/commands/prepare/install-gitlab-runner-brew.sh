@@ -11,7 +11,7 @@
 set -euo pipefail
 
 # Is GitLab Runner already installed?
-if type gitlab-runner &> /dev/null
+if [ "${TART_EXECUTOR_UPGRADE_GITLAB_RUNNER:-}" != "true" ] && type gitlab-runner &> /dev/null
 then
   echo "GitLab Runner is already installed, skipping installation"
 
@@ -24,6 +24,11 @@ brew update
 
 echo "Installing GitLab Runner via Homebrew..."
 
-brew install gitlab-runner
+if type gitlab-runner &> /dev/null
+then
+  brew reinstall gitlab-runner
+else
+  brew install gitlab-runner
+fi
 
 echo "GitLab Runner was successfully installed!"

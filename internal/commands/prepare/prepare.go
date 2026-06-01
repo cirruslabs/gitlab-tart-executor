@@ -220,6 +220,12 @@ func runPrepareVM(cmd *cobra.Command, _ []string) error {
 		}
 
 		// Perform GitLab Runner installation
+		if config.UpgradeGitlabRunner {
+			if _, err := fmt.Fprint(stdinBuf, "export TART_EXECUTOR_UPGRADE_GITLAB_RUNNER=true\n"); err != nil {
+				return err
+			}
+		}
+
 		if _, err := stdinBuf.Write([]byte(installGitlabRunnerScript)); err != nil {
 			return err
 		}

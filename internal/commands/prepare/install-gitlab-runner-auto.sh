@@ -25,7 +25,7 @@ GITLAB_RUNNER_URL="https://gitlab-runner-downloads.s3.amazonaws.com/latest/binar
 GITLAB_RUNNER_PATH="/usr/local/bin/gitlab-runner"
 
 # Is GitLab Runner already installed?
-if type gitlab-runner &> /dev/null
+if [ "${TART_EXECUTOR_UPGRADE_GITLAB_RUNNER:-}" != "true" ] && type gitlab-runner &> /dev/null
 then
   echo "GitLab Runner is already installed, skipping installation"
 
@@ -39,7 +39,12 @@ function install_via_brew() {
 
   echo "Installing GitLab Runner via Homebrew..."
 
-  brew install gitlab-runner
+  if type gitlab-runner &> /dev/null
+  then
+    brew reinstall gitlab-runner
+  else
+    brew install gitlab-runner
+  fi
 }
 
 function install_via_curl() {
