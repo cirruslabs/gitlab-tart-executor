@@ -163,7 +163,11 @@ concurrent = 2
 
 Tart Executor uses the default `admin:admin` credentials when connecting to the VM over SSH.
 
-If your image uses different credentials, set `TART_EXECUTOR_SSH_USERNAME` and/or `TART_EXECUTOR_SSH_PASSWORD` variables either in GitLab UI or in `.gitlab-ci.yml`:
+If your image uses different credentials, you have two options:
+
+#### Option 1: CI/CD variable
+
+Set `TART_EXECUTOR_SSH_USERNAME` and/or `TART_EXECUTOR_SSH_PASSWORD` in GitLab UI or in `.gitlab-ci.yml`:
 
 ```yaml
 test:
@@ -185,6 +189,28 @@ test:
     TART_EXECUTOR_SSH_PASSWORD: "custom-password"
 ```
 
+#### Option 2: Runner's `config.toml`
+
+Pass the SSH password via the `config` stage's `--default-ssh-password` flag in the runner's `config.toml`:
+
+```toml
+[[runners]]
+  executor = "custom"
+  [runners.custom]
+    config_exec = "gitlab-tart-executor"
+    config_args = ["config", "--default-ssh-password", "custom-password"]
+    prepare_exec = "gitlab-tart-executor"
+    prepare_args = ["prepare"]
+    run_exec = "gitlab-tart-executor"
+    run_args = ["run"]
+    cleanup_exec = "gitlab-tart-executor"
+    cleanup_args = ["cleanup"]
+```
+
+This keeps the default password out of CI/CD variables, preventing it from leaking into the job environment.
+
+**Precedence:** When both `TART_EXECUTOR_SSH_PASSWORD` (CI/CD variable) and `--default-ssh-password` are set, the CI/CD variable takes precedence. If neither is set, the built-in default (`admin`) is used.
+
 ## Licensing
 
 Tart Executor is open sourced under MIT license so people can base their own executors in Go of this code.
@@ -199,6 +225,7 @@ that required paid sponsorship upon exceeding a free limit.
 |----------------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--builds-dir`                   |         | Path to a directory on host to use for storing builds, automatically mounts that directory to the guest VM (mutually exclusive with `--guest-builds-dir`)                                             |
 | `--cache-dir`                    |         | Path to a directory on host to use for caching purposes, automatically mounts that directory to the guest VM (mutually exclusive with `--guest-cache-dir`)                                            |
+| `--default-ssh-password`         |         | SSH password to use when connecting to the VM when the job does not specify `TART_EXECUTOR_SSH_PASSWORD` (prevents the password from leaking into the job environment)                                |
 | `--guest-builds-dir`<sup>1</sup> |         | Path to a directory in guest to use for storing builds, useful when mounting a block device (via [`--disk` command-line argument](#prepare-stage)) to the VM (mutually exclusive with `--builds-dir`) |
 | `--guest-cache-dir`<sup>1</sup>  |         | Path to a directory in guest to use for caching purposes, useful when mounting a block device (via [`--disk` command-line argument](#prepare-stage) to the VM (mutually exclusive with `--cache-dir`) |
 

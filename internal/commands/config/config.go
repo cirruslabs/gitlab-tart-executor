@@ -19,8 +19,9 @@ const (
 var ErrConfigFailed = errors.New("configuration stage failed")
 
 var (
-	buildsDir string
-	cacheDir  string
+	buildsDir           string
+	cacheDir            string
+	defaultSSHPassword  string
 
 	guestBuildsDir string
 	guestCacheDir  string
@@ -51,6 +52,9 @@ func NewCommand() *cobra.Command {
 	cmd.PersistentFlags().StringVar(&guestCacheDir, "guest-cache-dir", "",
 		"path to a directory in guest to use for caching purposes, useful when mounting a block device "+
 			"via \"--disk\" command-line argument (mutually exclusive with \"--cache-dir\")")
+	cmd.PersistentFlags().StringVar(&defaultSSHPassword, "default-ssh-password", "",
+		"SSH password to use when connecting to the VM when the job does not specify "+
+			"TART_EXECUTOR_SSH_PASSWORD (prevents the password from leaking into the job environment)")
 
 	return cmd
 }
@@ -149,6 +153,12 @@ func runConfig(_ *cobra.Command, _ []string) error {
 	// because GitLab Runner won't do this for us
 	gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalBuildsDir] = gitlabRunnerConfig.BuildsDir
 	gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalCacheDir] = gitlabRunnerConfig.CacheDir
+
+	// Propagate the default SSH password from the runner's config.toml
+	// via the internal env var so it doesn't leak into the job environment
+	if defaultSSHPassword != "" {
+		gitlabRunnerConfig.JobEnv[tart.EnvTartExecutorInternalSSHPassword] = defaultSSHPassword
+	}
 
 	jsonBytes, err := json.MarshalIndent(&gitlabRunnerConfig, "", "  ")
 	if err != nil {

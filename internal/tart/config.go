@@ -3,6 +3,8 @@ package tart
 import (
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/caarlos0/env/v8"
 )
 
@@ -38,6 +40,11 @@ const (
 	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
 	// by the user.
 	EnvTartExecutorInternalCacheDirOnHost = "TART_EXECUTOR_INTERNAL_CACHE_DIR_ON_HOST"
+
+	// EnvTartExecutorInternalSSHPassword is an internal environment variable
+	// that does not use the "CUSTOM_ENV_" prefix, thus preventing the override
+	// by the user.
+	EnvTartExecutorInternalSSHPassword = "TART_EXECUTOR_INTERNAL_SSH_PASSWORD"
 )
 
 type Config struct {
@@ -67,6 +74,22 @@ func NewConfigFromEnvironment() (Config, error) {
 		Prefix: envPrefixGitLabRunner + envPrefixTartExecutor,
 	}); err != nil {
 		return config, fmt.Errorf("%w: %v", ErrConfigFromEnvironmentFailed, err)
+	}
+
+	// Three-tier precedence for the SSH password:
+	//
+	//   1. CI/CD variable (CUSTOM_ENV_TART_EXECUTOR_SSH_PASSWORD) — backward
+	//      compatible, but leaks into the job's environment.
+	//
+	//   2. Runner-side internal variable (TART_EXECUTOR_INTERNAL_SSH_PASSWORD)
+	//      set by the config stage's --default-ssh-password flag — doesn't leak.
+	//
+	//   3. Built-in default ("admin").
+	if _, ciCdSet := os.LookupEnv(envPrefixGitLabRunner + envPrefixTartExecutor + "SSH_PASSWORD"); ciCdSet {
+		// The env.ParseWithOptions call above already parsed the CI/CD variable,
+		// so config.SSHPassword is correct — nothing to do.
+	} else if internalPassword, ok := os.LookupEnv(EnvTartExecutorInternalSSHPassword); ok {
+		config.SSHPassword = internalPassword
 	}
 
 	return config, nil
