@@ -20,6 +20,7 @@ import (
 	"github.com/avast/retry-go/v4"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/dialer"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
+	"github.com/shirou/gopsutil/v3/cpu"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -99,6 +100,11 @@ func (vm *VM) cloneAndConfigure(
 	log.Println("Configuring a new VM...")
 
 	if cpuOverride != 0 {
+		totalCount, err := cpu.CountsWithContext(ctx, true)
+		if err == nil {
+			cpuOverride = min(uint64(totalCount), cpuOverride)
+		}
+
 		_, _, err = TartExec(ctx, "set", "--cpu", strconv.FormatUint(cpuOverride, 10), vm.id)
 		if err != nil {
 			return err
