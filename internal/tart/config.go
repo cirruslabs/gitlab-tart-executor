@@ -58,6 +58,7 @@ type Config struct {
 	InstallGitlabRunner string `env:"INSTALL_GITLAB_RUNNER"`
 	Timezone            string `env:"TIMEZONE"`
 	Display             string `env:"DISPLAY"`
+	CpuCount            uint64 `env:"CPU_COUNT" envDefault:"0"`
 }
 
 func NewConfigFromEnvironment() (Config, error) {

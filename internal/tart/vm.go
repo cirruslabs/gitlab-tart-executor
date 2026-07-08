@@ -101,13 +101,23 @@ func (vm *VM) cloneAndConfigure(
 
 	log.Println("Configuring a new VM...")
 
+	cpuCount := uint64(0)
 	if cpuOverride != 0 {
+		cpuCount = cpuOverride
+		if config.CpuCount != 0 {
+			cpuCount = min(cpuCount, config.CpuCount)
+		}
+	} else if config.CpuCount != 0 {
+		cpuCount = config.CpuCount
+	}
+
+	if cpuCount != 0 {
 		totalCount, err := cpu.CountsWithContext(ctx, true)
 		if err == nil {
-			cpuOverride = min(uint64(totalCount), cpuOverride)
+			cpuCount = min(uint64(totalCount), cpuCount)
 		}
 
-		_, _, err = TartExec(ctx, "set", "--cpu", strconv.FormatUint(cpuOverride, 10), vm.id)
+		_, _, err = TartExec(ctx, "set", "--cpu", strconv.FormatUint(cpuCount, 10), vm.id)
 		if err != nil {
 			return err
 		}
