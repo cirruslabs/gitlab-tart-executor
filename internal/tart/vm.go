@@ -17,10 +17,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/alecthomas/units"
 	"github.com/avast/retry-go/v4"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/dialer"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
 	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/mem"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -112,6 +114,11 @@ func (vm *VM) cloneAndConfigure(
 	}
 
 	if memoryOverride != 0 {
+		virtualMemoryStat, err := mem.VirtualMemoryWithContext(ctx)
+		if err == nil {
+			memoryOverride = min(memoryOverride, virtualMemoryStat.Total / uint64(units.MiB))
+		}
+
 		_, _, err = TartExec(ctx, "set", "--memory", strconv.FormatUint(memoryOverride, 10), vm.id)
 		if err != nil {
 			return err
