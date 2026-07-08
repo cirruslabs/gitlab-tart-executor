@@ -17,9 +17,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/alecthomas/units"
 	"github.com/avast/retry-go/v4"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/dialer"
 	"github.com/cirruslabs/gitlab-tart-executor/internal/gitlab"
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/mem"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -98,15 +101,45 @@ func (vm *VM) cloneAndConfigure(
 
 	log.Println("Configuring a new VM...")
 
+	cpuCount := uint64(0)
 	if cpuOverride != 0 {
-		_, _, err = TartExec(ctx, "set", "--cpu", strconv.FormatUint(cpuOverride, 10), vm.id)
+		cpuCount = cpuOverride
+		if config.CpuCount != 0 {
+			cpuCount = min(cpuCount, config.CpuCount)
+		}
+	} else if config.CpuCount != 0 {
+		cpuCount = config.CpuCount
+	}
+
+	if cpuCount != 0 {
+		totalCount, err := cpu.CountsWithContext(ctx, true)
+		if err == nil {
+			cpuCount = min(uint64(totalCount), cpuCount)
+		}
+
+		_, _, err = TartExec(ctx, "set", "--cpu", strconv.FormatUint(cpuCount, 10), vm.id)
 		if err != nil {
 			return err
 		}
 	}
 
+	memorySize := uint64(0)
 	if memoryOverride != 0 {
-		_, _, err = TartExec(ctx, "set", "--memory", strconv.FormatUint(memoryOverride, 10), vm.id)
+		memorySize = memoryOverride
+		if config.MemorySize != 0 {
+			memorySize = min(memorySize, config.MemorySize)
+		}
+	} else if config.MemorySize != 0 {
+		memorySize = config.MemorySize
+	}
+
+	if memorySize != 0 {
+		virtualMemoryStat, err := mem.VirtualMemoryWithContext(ctx)
+		if err == nil {
+			memorySize = min(memorySize, virtualMemoryStat.Total / uint64(units.MiB))
+		}
+
+		_, _, err = TartExec(ctx, "set", "--memory", strconv.FormatUint(memorySize, 10), vm.id)
 		if err != nil {
 			return err
 		}
