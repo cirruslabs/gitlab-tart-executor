@@ -59,6 +59,7 @@ type Config struct {
 	Timezone            string `env:"TIMEZONE"`
 	Display             string `env:"DISPLAY"`
 	CpuCount            uint64 `env:"CPU_COUNT" envDefault:"0"`
+	MemorySize          uint64 `env:"MEMORY_SIZE" envDefault:"0"`
 }
 
 func NewConfigFromEnvironment() (Config, error) {

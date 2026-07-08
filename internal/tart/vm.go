@@ -123,13 +123,23 @@ func (vm *VM) cloneAndConfigure(
 		}
 	}
 
+	memorySize := uint64(0)
 	if memoryOverride != 0 {
+		memorySize = memoryOverride
+		if config.MemorySize != 0 {
+			memorySize = min(memorySize, config.MemorySize)
+		}
+	} else if config.MemorySize != 0 {
+		memorySize = config.MemorySize
+	}
+
+	if memorySize != 0 {
 		virtualMemoryStat, err := mem.VirtualMemoryWithContext(ctx)
 		if err == nil {
-			memoryOverride = min(memoryOverride, virtualMemoryStat.Total / uint64(units.MiB))
+			memorySize = min(memorySize, virtualMemoryStat.Total / uint64(units.MiB))
 		}
 
-		_, _, err = TartExec(ctx, "set", "--memory", strconv.FormatUint(memoryOverride, 10), vm.id)
+		_, _, err = TartExec(ctx, "set", "--memory", strconv.FormatUint(memorySize, 10), vm.id)
 		if err != nil {
 			return err
 		}
