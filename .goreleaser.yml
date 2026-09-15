@@ -36,7 +36,7 @@ brews:
       owner: cirruslabs
       name: homebrew-cli
     dependencies:
-      - "cirruslabs/cli/tart"
+      - "openai/tools/tart"
     caveats: See the Github repository for more information
     homepage: https://github.com/cirruslabs/gitlab-tart-executor
     description: GitLab Runner Executor to run jobs inside isolated Tart VMs
