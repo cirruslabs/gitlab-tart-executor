@@ -82,6 +82,10 @@ func (vm *VM) cloneAndConfigure(
 
 	cloneArgs := []string{"clone", image, vm.id}
 
+	if config.Stacked {
+		cloneArgs = append(cloneArgs, "--stacked")
+	}
+
 	if config.InsecurePull {
 		cloneArgs = append(cloneArgs, "--insecure")
 	}
