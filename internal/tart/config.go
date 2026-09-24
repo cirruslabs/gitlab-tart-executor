@@ -53,6 +53,7 @@ type Config struct {
 	AlwaysPull          bool   `env:"ALWAYS_PULL"  envDefault:"true"`
 	InsecurePull        bool   `env:"INSECURE_PULL"  envDefault:"false"`
 	PullConcurrency     uint8  `env:"PULL_CONCURRENCY"`
+	Stacked             bool   `env:"STACKED"  envDefault:"false"`
 	HostDir             bool   `env:"HOST_DIR"`
 	Shell               string `env:"SHELL"`
 	InstallGitlabRunner string `env:"INSTALL_GITLAB_RUNNER"`
