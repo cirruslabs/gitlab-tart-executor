@@ -98,10 +98,6 @@ func runConfig(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("%w: --builds-dir and TART_EXECUTOR_HOST_DIR are mutually exclusive",
 			ErrConfigFailed)
 	}
-	if tartConfig.HostDir && guestBuildsDir != "" {
-		return fmt.Errorf("%w: --guest-builds-dir and TART_EXECUTOR_HOST_DIR are mutually exclusive",
-			ErrConfigFailed)
-	}
 
 	if buildsDir != "" && guestBuildsDir != "" {
 		return fmt.Errorf("%w: --builds-dir and --guest-builds-dir are mutually exclusive",
@@ -128,7 +124,9 @@ func runConfig(_ *cobra.Command, _ []string) error {
 		if err := os.MkdirAll(buildsDir, 0700); err != nil {
 			return err
 		}
-	case guestBuildsDir != "":
+	}
+
+	if guestBuildsDir != "" {
 		gitlabRunnerConfig.BuildsDir = guestBuildsDir
 	}
 
