@@ -185,6 +185,16 @@ test:
     TART_EXECUTOR_SSH_PASSWORD: "custom-password"
 ```
 
+### Exposing VM name
+
+Each ephemeral VM gets a unique name derived from the GitLab job ID (e.g. `gitlab-123`). You can expose this name as an environment variable inside the job by setting `TART_EXECUTOR_PASS_VM_NAME`.
+
+**One-time guest image setup** — add the following line to `/etc/ssh/sshd_config` in your VM template image:
+
+```shell
+AcceptEnv TART_EXECUTOR_VM_NAME
+```
+
 ## Licensing
 
 Tart Executor is open sourced under MIT license so people can base their own executors in Go of this code.
@@ -248,6 +258,7 @@ that required paid sponsorship upon exceeding a free limit.
 | `TART_EXECUTOR_SSH_PASSWORD`          | admin          | SSH password to use when connecting to the VM                                                                                                                                                                                                                                                                                                                                                                                            |
 | `TART_EXECUTOR_SSH_PORT`              | 22             | Connect to the VM at the given SSH port                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `TART_EXECUTOR_SSH_USERNAME`          | admin          | SSH username to use when connecting to the VM                                                                                                                                                                                                                                                                                                                                                                                            |
+| `TART_EXECUTOR_PASS_VM_NAME`          | false          | Expose the VM name inside the guest job as `TART_EXECUTOR_VM_NAME` (`CI_JOB_ID`-based, e.g. `gitlab-123`) so pipeline scripts can use it as needed. Requires `AcceptEnv TART_EXECUTOR_VM_NAME` in the guest's `/etc/ssh/sshd_config` (see [VM name in job scripts](#exposing-vm-name-in-job-scripts)) |
 | `TART_EXECUTOR_TIMEZONE`              |                | Timezone to set in the guest (or `auto` to pick up the timezone from host), see `systemsetup listtimezones` for a list of possible timezones                                                                                                                                                                                                                                                                                             |
 | `TART_EXECUTOR_DISPLAY`               |                | Set VM display resolution to `<width>x<height>` (e.g. `1920x1080`)                                                                                                                                                                                                                                                                                                                                                                                          |
 
